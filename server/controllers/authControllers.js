@@ -17,7 +17,7 @@ module.exports.Signup = async (req, res, next) => {
     });
     res
       .status(201)
-      .json({ message: "User signed in successfully", success: true, user });
+      .json({ message: "User signed up successfully", success: true, user, token: token});
     next();
   } catch (error) {
     console.error(error);
@@ -43,9 +43,19 @@ module.exports.Login = async (req, res, next) => {
        withCredentials: true,
        httpOnly: false,
      });
-     res.status(201).json({ message: "User logged in successfully", success: true });
+     res.status(201).json({ message: "User logged in successfully", success: true, user, token: token});
      next()
   } catch (error) {
     console.error(error);
   }
+}
+
+module.exports.searchUsers = async (req, res) => {
+  const keyword = req.query.search ? {
+    username:{$regex: req.query.search, $options:"i"}
+      
+  } : {};
+
+  const users = await User.find(keyword).find({_id: {$ne: req.user._id }})
+  res.send(users)
 }

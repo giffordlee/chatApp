@@ -16,7 +16,7 @@ function Home() {
         navigate("/login")
       }
 
-      const { data } = await axios.post("http://localhost:4000", {}, {withCredentials: true});
+      const { data } = await axios.post("http://localhost:4000/api/user", {}, {withCredentials: true});
       const { status, user } = data;
       setUsername(user);
 
@@ -31,6 +31,7 @@ function Home() {
   const SignOut = () => {
     removeCookie("token");
     navigate("/login");
+    console.log("User signed out")
   }
   return (
     <div>
