@@ -9,12 +9,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Your password is required"],
-  },
-  createdAt: {
-    type: Date,
-    default: new Date(),
   }
-});
+}, { timestamps: true });
 
 userSchema.pre("save", async function() {
   this.password = await bcrypt.hash(this.password, 12)
