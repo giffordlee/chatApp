@@ -38,7 +38,7 @@ function NavigationBar({SignOut, username}) {
               id="menu-appbar"
               anchorEl={anchorEl}
               anchorOrigin={{
-                vertical: 'bottom',
+                vertical: 'top',
                 horizontal: 'right',
               }}
               keepMounted

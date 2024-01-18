@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const userModel = require("./userModel");
 
 const chatSchema = new mongoose.Schema({
   chatName: {
@@ -12,17 +11,17 @@ const chatSchema = new mongoose.Schema({
   },
   users: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: userModel,
+    ref: "User",
   }],
    // kiv
   latestMessage: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "messagemodel",
+    ref: "Message",
   },
   // kiv
   groupAdmin: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: userModel,
+    ref: "User",
   }
 }, { timestamps: true })
 

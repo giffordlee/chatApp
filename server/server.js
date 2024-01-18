@@ -5,6 +5,7 @@ const connectDB = require("./config/db")
 const cookieParser = require("cookie-parser");
 const authRoute = require("./routes/authRoute")
 const chatRoute = require("./routes/chatRoute")
+const messageRoute = require("./routes/messageRoute")
 require("dotenv").config();
 
 const app = express();
@@ -30,3 +31,4 @@ app.use(express.json());
 
 app.use("/api/user", authRoute)
 app.use("/api/chat", chatRoute)
+app.use("/api/message", messageRoute)

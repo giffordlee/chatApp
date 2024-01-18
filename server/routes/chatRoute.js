@@ -1,4 +1,4 @@
-const { userVerification, protect } = require("../middlewares/authMiddleware")
+const { protect } = require("../middlewares/authMiddleware")
 const { accessChat, fetchChats, createGroupChat, renameGroup, addToGroup, removeFromGroup} = require("../controllers/chatControllers")
 const router = require("express").Router();
 

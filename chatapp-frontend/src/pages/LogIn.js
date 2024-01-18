@@ -51,13 +51,14 @@ function LogIn() {
         },
         { withCredentials: true }
       );
-      console.log(data);
+      console.log('pop',data);
       const { success, message } = data;
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
           navigate("/");
         }, 1000);
+        localStorage.setItem("userInfo", JSON.stringify(data));
       } else {
         handleError(message);
       }

@@ -54,6 +54,7 @@ function SignUp() {
           setTimeout(() => {
             navigate("/");
           }, 1000);
+          localStorage.setItem("userInfo", JSON.stringify(data));
         } else {
           handleError(message);
         }
