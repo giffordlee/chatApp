@@ -5,13 +5,17 @@ import { ChatState } from '../context/ChatProvider';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import axios from 'axios';
+import io from 'socket.io-client';
 
+const ENDPOINT = "http://localhost:4000";
+var socket, selectedChatCompare;
 
 function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
   const { user, selectedChat, setSelectedChat } = ChatState();
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  const [socketeConnected, setSocketConnected] = useState(false);
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -52,17 +56,40 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
       setMessages(updatedMessages);
       setLoading(false);
 
-      // socket.emit("join chat", selectedChat._id);
+      socket.emit("join chat", selectedChat._id);
     } catch (error) {
       console.log(error)
     }
   };
 
   useEffect(() => {
+    socket = io(ENDPOINT);
+    
+    if (user) {
+      console.log("im right here")
+      socket.emit('setup', user.user)
+      socket.on("connection", () => {setSocketConnected(true)})
+    }
+  }, [user])
+
+
+  useEffect(() => {
     if (user) {
       fetchMessages()
+      selectedChatCompare = selectedChat;
     }
   }, [user, selectedChat])
+
+  useEffect(() => {
+    socket.on('message received', (newMessageReceived) => {
+
+      if (!selectedChatCompare || selectedChatCompare._id !== newMessageReceived.chat._id) {
+        // notify
+      } else {
+        setMessages([...messages, newMessageReceived])
+      }
+    })
+  })
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -84,8 +111,8 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
           },
           config
         );
-        console.log(data)
-        // socket.emit("new message", data);
+        console.log(":",data)
+        socket.emit("new message", data);
         setMessages([...messages, data]);
         fetchMessages()
       } catch (error) {
