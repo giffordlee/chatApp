@@ -5,19 +5,25 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, "Your username is required"],
+    unique: true,
   },
   password: {
     type: String,
     required: [true, "Your password is required"],
-  },
-  createdAt: {
-    type: Date,
-    default: new Date(),
+  }
+}, { timestamps: true });
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next(); // If password is not modified, proceed to the next middleware
+  }
+
+  try {
+    this.password = await bcrypt.hash(this.password, 12);
+    next();
+  } catch (error) {
+    return next(error);
   }
 });
-
-userSchema.pre("save", async function() {
-  this.password = await bcrypt.hash(this.password, 12)
-})
 
 module.exports = mongoose.model("User", userSchema);

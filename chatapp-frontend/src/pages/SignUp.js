@@ -5,7 +5,10 @@ import {
   Typography,
   Container,
   Paper,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -13,6 +16,12 @@ function SignUp() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  }
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -22,28 +31,38 @@ function SignUp() {
     setPassword(e.target.value);
   };
 
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+  };
+
   const handleSignup = async (e) => {
     e.preventDefault();
-    try {
-      const { data } = await axios.post(
-        "http://localhost:4000/signup",
-        {
-          "username": username,
-          "password": password
-        },
-        { withCredentials: true }
-      );
-      const { success, message } = data;
-      if (success) {
-        handleSuccess(message);
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
-      } else {
-        handleError(message);
+
+    if (password === confirmPassword) {
+      try {
+        const { data } = await axios.post(
+          "http://localhost:4000/api/user/signup",
+          {
+            "username": username,
+            "password": password
+          },
+          { withCredentials: true }
+        );
+        const { success, message } = data;
+        if (success) {
+          handleSuccess(data);
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+          localStorage.setItem("userInfo", JSON.stringify(data));
+        } else {
+          handleError(message);
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
+    } else {
+      console.log("Password dont match")
     }
   };
 
@@ -54,8 +73,9 @@ function SignUp() {
     console.log("success: ", msg)
     setUsername('');
     setPassword('');
+    setConfirmPassword('');
   };
-
+  
   return (
     <Container component="main" maxWidth="xs" style={{ marginTop: '8vh'}}>
       <Paper style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2vh'}}>
@@ -83,11 +103,42 @@ function SignUp() {
             fullWidth
             name="password"
             label="Password"
-            type="password"
+            type={showPassword? "text" : "password"}
             id="password"
             autoComplete="new-password"
             value={password}
             onChange={handlePasswordChange}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={toggleShowPassword}>
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="confirm_password"
+            label="Confirm Password"
+            type={showPassword? "text" : "password"}
+            id="confirm_password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={handleConfirmPasswordChange}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={toggleShowPassword}>
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
             type="button"
