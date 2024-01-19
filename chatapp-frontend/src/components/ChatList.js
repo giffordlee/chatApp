@@ -7,7 +7,7 @@ import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import { Box, Button, Typography, Stack } from '@mui/material';
 import NewGroupModal from "./NewGroupModal";
 
-function ChatList({fetchAgain}) {
+function ChatList({fetchAgain, setFetchAgain}) {
   const [loggedUser, setLoggedUser] = useState();
   const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
 
@@ -42,7 +42,7 @@ function ChatList({fetchAgain}) {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")).user);
     if (user) {
       fetchChats();
-
+      setFetchAgain(false);
     }
   }, [user, fetchAgain]);
 
@@ -89,73 +89,7 @@ function ChatList({fetchAgain}) {
       </List>
     </Stack>
 
-    // <Box
-    //   display={{ xs: selectedChat ? 'none' : 'flex', md: 'flex' }}
-    //   flexDirection="column"
-    //   alignItems="center"
-    //   padding={3}
-    //   bgcolor="white"
-    //   width={{ xs: '100%', md: '31%' }}
-    //   borderRadius="lg"
-    //   border="1px solid"
-    // >
-    //   <Box
-    //     paddingBottom={3}
-    //     paddingX={3}
-    //     fontSize={{ xs: '28px', md: '30px' }}
-    //     fontFamily="Work sans"
-    //     display="flex"
-    //     width="100%"
-    //     justifyContent="space-between"
-    //     alignItems="center"
-    //   >
-    //     My Chats
-        
-    //   </Box>
-    //   <Box
-    //     display="flex"
-    //     flexDirection="column"
-    //     padding={3}
-    //     bgcolor="#F8F8F8"
-    //     width="100%"
-    //     height="100%"
-    //     borderRadius="lg"
-    //     overflowY="hidden"
-    //   >
-    //     {chats ? (
-    //       <Stack overflowY="scroll">
-    //         {chats.map((chat) => (
-    //           <Box
-    //             onClick={() => setSelectedChat(chat)}
-    //             cursor="pointer"
-    //             bgcolor={selectedChat === chat ? '#38B2AC' : '#E8E8E8'}
-    //             color={selectedChat === chat ? 'white' : 'black'}
-    //             paddingX={3}
-    //             paddingY={2}
-    //             borderRadius="lg"
-    //             key={chat._id}
-    //           >
-                // <Typography>
-                //   {!chat.isGroupChat
-                //     ? getSender(loggedUser, chat.users)
-                //     : chat.chatName}
-                // </Typography>
-                // {chat.latestMessage && (
-                //   <Typography fontSize="xs">
-                //     <b>{chat.latestMessage.sender.name} : </b>
-                //     {chat.latestMessage.content.length > 50
-                //       ? chat.latestMessage.content.substring(0, 51) + '...'
-                //       : chat.latestMessage.content}
-                //   </Typography>
-                // )}
-    //           </Box>
-    //         ))}
-    //       </Stack>
-    //     ) : (
-    //       <h2>Loading</h2>
-    //     )}
-    //   </Box>
-    // </Box>
+
   );
 }
 

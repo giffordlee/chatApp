@@ -14,17 +14,13 @@ function ChatPage() {
   const [cookies, removeCookie] = useCookies([]);
   const [username, setUsername] = useState("");
   const [fetchAgain, setFetchAgain] = useState(false)
-  const messages = [
-    { text: "Hey man, What's up ?", align: "right", timestamp: "09:30" },
-    { text: "Hey, I am Good! What about you ?", align: "left", timestamp: "09:31" },
-    { text: "Cool. I am good, let's catch up!", align: "right", timestamp: "10:30" },
-  ];
 
+  
   useEffect(() => {
     if (user) {
-      setUsername(user.username);
-    }
-    
+      console.log("REACHED HERE", user)
+      setUsername(user.user.username);
+    } 
   }, [user])
 
   const SignOut = () => {
@@ -37,8 +33,8 @@ function ChatPage() {
     <div>
       {user && <NavigationBar SignOut={SignOut} username={username}/>}
       <Box style={{ display: "flex", height: "100vh" }}>
-        <ChatList fetchAgain={fetchAgain}/>
-        <ChatContent messagess={messages} fetchAgain={fetchAgain}/>
+        <ChatList fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
+        <ChatContent fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
       </Box>
     </div>
   )

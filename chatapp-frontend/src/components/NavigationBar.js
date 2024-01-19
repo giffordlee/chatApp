@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import SettingsModal from './SettingsModal';
 
 function NavigationBar({SignOut, username}) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -49,7 +50,9 @@ function NavigationBar({SignOut, username}) {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}>Settings</MenuItem>
+              <SettingsModal>
+                <MenuItem onClick={handleClose}>Settings</MenuItem>
+              </SettingsModal>
               <MenuItem onClick={SignOut}>Sign Out</MenuItem>
             </Menu>
           </div>

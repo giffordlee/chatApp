@@ -10,12 +10,13 @@ import io from 'socket.io-client';
 const ENDPOINT = "http://localhost:4000";
 var socket, selectedChatCompare;
 
-function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
+function ChatContent({ fetchAgain, setFetchAgain}) {
   const { user, selectedChat, setSelectedChat } = ChatState();
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  const [socketeConnected, setSocketConnected] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [loggedUser, setLoggedUser] = useState();
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -66,7 +67,6 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
     socket = io(ENDPOINT);
     
     if (user) {
-      console.log("im right here")
       socket.emit('setup', user.user)
       socket.on("connection", () => {setSocketConnected(true)})
     }
@@ -78,7 +78,12 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
       fetchMessages()
       selectedChatCompare = selectedChat;
     }
+    
   }, [user, selectedChat])
+
+  useEffect(() => {
+    setLoggedUser(JSON.parse(localStorage.getItem("userInfo")).user);
+  },[selectedChat])
 
   useEffect(() => {
     socket.on('message received', (newMessageReceived) => {
@@ -115,6 +120,7 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
         socket.emit("new message", data);
         setMessages([...messages, data]);
         fetchMessages()
+        setFetchAgain(true)
       } catch (error) {
         console.log("error")
       }
@@ -125,6 +131,10 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
     setNewMessage(e.target.value);
   }
 
+  const getSender = (loggedUser, users) => {
+    return users[0]?._id === loggedUser?._id ? users[1].username : users[0].username;
+  };
+
   return (
     <Paper sx={{ flex: 1, pl: 2 }}>
       {loading ? (
@@ -134,7 +144,7 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
           <Grid>
             <Stack direction='row'>
               {selectedChat.isGroupChat ? <SupervisedUserCircleIcon sx={{m: 1}}/> : <AccountCircle sx={{m: 1}}/>}
-              <Typography variant='h5' sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>{selectedChat.chatName}</Typography>
+              <Typography variant='h5' sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>{!selectedChat.isGroupChat ? getSender(loggedUser, selectedChat.users): selectedChat.chatName}</Typography>
             </Stack>
             <Divider />
             <List sx={{ height: '70vh', overflowY: 'auto' }}>

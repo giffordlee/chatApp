@@ -125,12 +125,12 @@ export default function NewGroupModal({children}) {
       const { status, data } = await axios.post(
         `http://localhost:4000/api/chat/personal`,
         {
-          name: userData.username,
+          name: "sender",
           users: JSON.stringify([userData._id]),
         },
         config
       );
-      console.log(data)
+      console.log('lol',data)
 
       if (status === 201 ){
         setChats([data, ...chats]);
