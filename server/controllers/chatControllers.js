@@ -98,6 +98,47 @@ module.exports.createGroupChat = async (req, res) => {
   }
 }
 
+module.exports.createPersonalChat = async (req, res) => {
+  if (!req.body.users || !req.body.name) {
+    return res.status(400).send({ message: "Please Fill all the feilds" });
+  }
+
+  var users = JSON.parse(req.body.users);
+
+  users.push(req.user);
+
+  try {
+
+    const existingChat = await Chat.findOne({
+      users: {
+        $all: users,
+        $size: users.length,
+      },
+      isGroupChat: false,
+    });
+
+    if (existingChat) {
+      return res.status(200).json(existingChat);
+    }
+
+    const personalChat = await Chat.create({
+      chatName: req.body.name,
+      users: users,
+      isGroupChat: false,
+      groupAdmin: req.user,
+    });
+
+    const fullPersonalChat = await Chat.findOne({ _id: personalChat._id })
+      .populate("users", "-password")
+      .populate("groupAdmin", "-password");
+
+    res.status(201).json(fullPersonalChat);
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+}
+
 module.exports.renameGroup = async (req, res) => {
   const { chatId, chatName } = req.body;
 

@@ -56,7 +56,7 @@ function ChatList({fetchAgain}) {
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h4" sx={{my:1}}>My Chat</Typography>
         <NewGroupModal>
-          <Button variant="outlined" sx={{mr:1}}>New group chat</Button>
+          <Button variant="outlined" sx={{mr:1}}>New chat</Button>
         </NewGroupModal>
       </Stack>
       <List

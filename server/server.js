@@ -24,12 +24,14 @@ const io = require('socket.io')(server, {
   }
 })
 
+let onlineUsers = []
+
 io.on("connection", (socket) => {
   console.log("connected to socket.io")
 
   socket.on('setup', (userData) => {
     socket.join(userData._id);
-    console.log(userData._id)
+    console.log("setup", userData._id)
     socket.emit('connected')
   })
 
@@ -48,7 +50,12 @@ io.on("connection", (socket) => {
       
       socket.in(user._id).emit("message received", newMessageReceived)
     })
-  })
+
+    socket.off("setup", () => {
+      console.log("USER DISCONNECTED");
+      socket.leave(userData._id)
+    })
+  })  
 })
 
 app.use(

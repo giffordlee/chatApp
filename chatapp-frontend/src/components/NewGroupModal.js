@@ -1,8 +1,24 @@
-import {Modal, Typography, Button, Box, TextField, List, ListItem, Checkbox, ListItemButton, Snackbar, Alert, ListItemText} from '@mui/material';
+import {
+  Modal, 
+  Typography, 
+  Button, 
+  Box, 
+  TextField, 
+  List, 
+  ListItem, 
+  Checkbox, 
+  ListItemButton, 
+  ListItemText,
+  Tab,
+} from '@mui/material';
+import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { ChatState } from "../context/ChatProvider";
 import axios from 'axios';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 
 const style = {
   position: 'absolute',
@@ -10,6 +26,7 @@ const style = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   width: 400,
+  height:400,
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
@@ -21,7 +38,8 @@ export default function NewGroupModal({children}) {
   const [groupChatName, setGroupChatName] = useState("")
   const [checkedUsers, setCheckedUsers] = useState([]);
   const [userList, setUserList] = useState([]);
-  const { user, chats, setChats } = ChatState();
+  const { user, chats, setChats, setSelectedChat } = ChatState();
+  const [value, setValue] = useState("1");
 
   const handleFetchUsers = async () => {
     const config = {
@@ -87,12 +105,78 @@ export default function NewGroupModal({children}) {
       );
       console.log(data)
       setChats([data, ...chats]);
+      setSelectedChat(data);
       handleClose();
 
     } catch (error) {
       console.log(error)
     }
   };
+
+  const handleCreatePersonalChat = async (userData) => {
+
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      const { status, data } = await axios.post(
+        `http://localhost:4000/api/chat/personal`,
+        {
+          name: userData.username,
+          users: JSON.stringify([userData._id]),
+        },
+        config
+      );
+      console.log(data)
+
+      if (status === 201 ){
+        setChats([data, ...chats]);
+      }
+      setSelectedChat(data);
+      handleClose();
+
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
+  const handleChangeTab = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  function CustomTabPanel(props) {
+    const { children, value, index, ...other } = props;
+  
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <>{children}</>
+        )}
+      </div>
+    );
+  }
+  
+  CustomTabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+  };
+  
+  function a11yProps(index) {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
+  }
 
   return (
     <div>
@@ -103,48 +187,70 @@ export default function NewGroupModal({children}) {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
+        
+        <TabContext value={value}>
         <Box sx={style}>
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-            Create New Group Chat
-          </Typography>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Group Chat Name"
-            variant="outlined"
-            value={groupChatName}
-            onChange={(e) => setGroupChatName(e.target.value)}
-          />
-          <List dense sx={{ width: '100%', bgcolor: 'background.paper' }}>
-            {userList.map((userDetail) => {
-              const labelId = `checkbox-list-secondary-label-${userDetail._id}`;
-              return (
-                <ListItem
-                  key={userDetail._id}
-                  secondaryAction={
-                    <Checkbox
-                      edge="end"
-                      onChange={handleToggle(userDetail)}
-                      checked={checkedUsers.indexOf(userDetail) !== -1}
-                      inputProps={{ 'aria-labelledby': labelId }}
-                    />
-                  }
-                  disablePadding
-                >
-                  <ListItemButton sx={{marginRight:1}}>
-                    
-                      <AccountCircleIcon />
-                    
-                    <ListItemText id={labelId} primary={userDetail.username} />
-                  </ListItemButton>
+          
+          <TabList onChange={handleChangeTab} centered>
+            <Tab label="New Group" value="1"/>
+            <Tab label="New Chat" value="2" />
+          </TabList>
+          <TabPanel value="1">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Create New Group Chat
+            </Typography>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Group Chat Name"
+              variant="outlined"
+              value={groupChatName}
+              onChange={(e) => setGroupChatName(e.target.value)}
+            />
+            <List dense sx={{ width: '100%', bgcolor: 'background.paper' }}>
+              {userList.map((userDetail) => {
+                const labelId = `checkbox-list-secondary-label-${userDetail._id}`;
+                return (
+                  <ListItem
+                    key={userDetail._id}
+                    secondaryAction={
+                      <Checkbox
+                        edge="end"
+                        onChange={handleToggle(userDetail)}
+                        checked={checkedUsers.indexOf(userDetail) !== -1}
+                        inputProps={{ 'aria-labelledby': labelId }}
+                      />
+                    }
+                    disablePadding
+                  >
+                    <ListItemButton sx={{marginRight:1}}>
+                      
+                        <AccountCircleIcon />
+                      
+                      <ListItemText id={labelId} primary={userDetail.username} />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+            <Button variant="contained" color="primary" onClick={handleCreateGroupChat}>
+              Create Group Chat
+            </Button>
+          </TabPanel>
+          <TabPanel value="2">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+                Start New Chat
+            </Typography>
+            <List sx={{ overflowY: 'auto'}}>
+              {userList.map((userData) =>
+                <ListItem key={userData._id} button onClick={() => handleCreatePersonalChat(userData)}>
+                  <ListItemText primary={userData.username}/>
                 </ListItem>
-              );
-            })}
-          </List>
-          <Button variant="contained" color="primary" onClick={handleCreateGroupChat}>
-            Create Group Chat
-          </Button>
+              )}
+            </List>
+          </TabPanel>
         </Box>
+        </TabContext>
       </Modal>
     </div>
   );

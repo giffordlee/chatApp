@@ -146,13 +146,13 @@ function ChatContent({ messagess, fetchAgain, setFetchAgain}) {
                     </Grid>
                     <Grid item xs={12}>
                     <ListItemText
-  align={message.align}
-  secondary={
-    <span style={{ fontSize: '10px' }}>
-      <strong style={{ fontWeight: 'bold' }}>{message.sender.username}</strong> {message.createdAt}
-    </span>
-  }
-></ListItemText>
+                      align={message.align}
+                      secondary={
+                        <span style={{ fontSize: '10px' }}>
+                          <strong style={{ fontWeight: 'bold' }}>{message.sender.username}</strong> {message.createdAt}
+                        </span>
+                      }
+                    ></ListItemText>
                     </Grid>
                   </Grid>
                 </ListItem>
