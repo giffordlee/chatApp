@@ -3,50 +3,93 @@ const { createSecretToken } = require("../utils/SecretToken");
 const bcrypt = require("bcryptjs");
 
 module.exports.Signup = async (req, res, next) => {
-  try {
-    const { password, username, createdAt } = req.body;
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.json({ message: "User already exists" });
-    }
-    const user = await User.create({ password, username, createdAt });
-    const token = createSecretToken(user._id);
-    res.cookie("token", token, {
-      withCredentials: true,
-      httpOnly: false,
+  // try {
+  //   const { password, username, createdAt } = req.body;
+  //   const existingUser = await User.findOne({ username });
+  //   if (existingUser) {
+  //     return res.json({ message: "User already exists" });
+  //   }
+  //   const user = await User.create({ password, username, createdAt });
+  //   const token = createSecretToken(user._id);
+  //   res.cookie("token", token, {
+  //     withCredentials: true,
+  //     httpOnly: false,
+  //   });
+  //   res
+  //     .status(201)
+  //     .json({ message: "User signed up successfully", success: true, user, token: token});
+  //   next();
+  // } catch (error) {
+  //   console.error(error);
+  // }
+  const { username,password } = req.body;
+
+  if (!username || !password) {
+    res.status(400);
+    throw new Error("Please Enter all the Feilds");
+  }
+
+  const userExists = await User.findOne({ username });
+
+  if (userExists) {
+    return res.status(400).json({message: 'User exists'});
+    // throw new Error("User already exists");
+  }
+
+  const user = await User.create({
+    username,
+    password
+  });
+
+  if (user) {
+    res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      token: createSecretToken(user._id),
     });
-    res
-      .status(201)
-      .json({ message: "User signed up successfully", success: true, user, token: token});
-    next();
-  } catch (error) {
-    console.error(error);
+  } else {
+    res.status(400);
+    throw new Error("User not found");
   }
 };
 
 module.exports.Login = async (req, res, next) => {
-  try {
-    const { username, password } = req.body;
-    if(!username || !password ){
-      return res.json({message:'All fields are required'})
-    }
-    const user = await User.findOne({ username });
-    if(!user){
-      return res.json({message:'Incorrect password or username' }) 
-    }
-    const auth = await bcrypt.compare(password,user.password)
-    if (!auth) {
-      return res.json({message:'Incorrect password or username' }) 
-    }
-     const token = createSecretToken(user._id);
-     res.cookie("token", token, {
-       withCredentials: true,
-       httpOnly: false,
-     });
-     res.status(201).json({ message: "User logged in successfully", success: true, user, token: token});
-     next()
-  } catch (error) {
-    console.error(error);
+  // try {
+  //   const { username, password } = req.body;
+  //   if(!username || !password ){
+  //     return res.json({message:'All fields are required'})
+  //   }
+  //   const user = await User.findOne({ username });
+  //   if(!user){
+  //     return res.json({message:'Incorrect password or username' }) 
+  //   }
+  //   const auth = await bcrypt.compare(password,user.password)
+  //   if (!auth) {
+  //     return res.json({message:'Incorrect password or username' }) 
+  //   }
+  //    const token = createSecretToken(user._id);
+  //    res.cookie("token", token, {
+  //      withCredentials: true,
+  //      httpOnly: false,
+  //    });
+  //    res.status(201).json({ message: "User logged in successfully", success: true, user, token: token});
+  //    next()
+  // } catch (error) {
+  //   console.error(error);
+  // }
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username });
+
+  if (user && (await user.matchPassword(password))) {
+    res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      token: createSecretToken(user._id),
+    });
+  } else {
+    res.status(401).json({message: "Invalid Email or Password"});
+    // throw new Error("Invalid Email or Password");
   }
 }
 

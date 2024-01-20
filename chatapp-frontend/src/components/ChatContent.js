@@ -36,7 +36,7 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
       );
       
       const updatedMessages = data.map(message => {
-        const isCurrentUser = message.sender._id === user.user._id;
+        const isCurrentUser = message.sender._id === user._id;
         message.align = isCurrentUser ? 'right' : 'left';
 
         const timestamp = new Date(message.createdAt);
@@ -67,7 +67,7 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
     socket = io(ENDPOINT);
     
     if (user) {
-      socket.emit('setup', user.user)
+      socket.emit('setup', user)
       socket.on("connection", () => {setSocketConnected(true)})
     }
   }, [user])
@@ -82,7 +82,7 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
   }, [user, selectedChat])
 
   useEffect(() => {
-    setLoggedUser(JSON.parse(localStorage.getItem("userInfo")).user);
+    setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
   },[selectedChat])
 
   useEffect(() => {

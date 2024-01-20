@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   TextField,
-  Button,
   Typography,
   Container,
   Paper,
   InputAdornment,
   IconButton,
 } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ChatState } from '../context/ChatProvider';
+import SnackBar from '../misc/SnackBar';
 
 function LogIn() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarStatus, setSnackbarStatus] = useState("");
+  const { setUser } = ChatState();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+
+    if (user) navigate("/chats");
+  }, [navigate]);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -42,29 +55,67 @@ function LogIn() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    setLoading(true);
+    if (!username || !password) {
+      setSnackbarMessage("Please Fill all Fields")
+      setSnackbarStatus("warning")
+      setOpenSnackbar(true);
+      setLoading(false);
+      return;
+    }
+
     try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+
       const { data } = await axios.post(
         "http://localhost:4000/api/user/login",
-        {
-          "username": username,
-          "password": password
-        },
-        { withCredentials: true }
+        { username, password },
+        config
       );
-      console.log('pop',data);
-      const { success, message } = data;
-      if (success) {
-        handleSuccess(message);
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
-        localStorage.setItem("userInfo", JSON.stringify(data));
-      } else {
-        handleError(message);
-      }
+
+      setSnackbarMessage("Log In Successful")
+      setSnackbarStatus("success")
+      setOpenSnackbar(true);
+
+      setUser(data);
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      setLoading(false);
+      navigate("/chats");
     } catch (error) {
-      console.log(error);
+      setSnackbarMessage("Error Occured!")
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
+      setLoading(false);
     }
+
+    // try {
+    //   const { data } = await axios.post(
+    //     "http://localhost:4000/api/user/login",
+    //     {
+    //       "username": username,
+    //       "password": password
+    //     },
+    //     { withCredentials: true }
+    //   );
+    //   console.log('pop',data);
+    //   const { success, message } = data;
+    //   if (success) {
+    //     handleSuccess(message);
+    //     setTimeout(() => {
+    //       navigate("/");
+    //     }, 1000);
+    //     localStorage.setItem("userInfo", JSON.stringify(data));
+    //   } else {
+    //     handleError(message);
+    //   }
+    // } catch (error) {
+    //   console.log(error);
+    // }
     
   };
 
@@ -110,17 +161,19 @@ function LogIn() {
               ),
             }}
           />
-          <Button
+          <LoadingButton
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
             style={{ margin: '1rem 0 2rem' }}
+            loading={loading}
             onClick={handleLogin}
           >
             Log In
-          </Button>
+          </LoadingButton>
         </form>
+        <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
         <Typography>Do not have an account? <Link to={"/signup"}>Sign Up</Link></Typography>
       </Paper>
     </Container>

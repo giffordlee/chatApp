@@ -28,8 +28,8 @@ export default function SettingsModal({children}) {
   }
 
   useEffect(() => {
-    setUsername(JSON.parse(localStorage.getItem("userInfo")).user.username)
-    console.log(JSON.parse(localStorage.getItem("userInfo")).user.username)
+    setUsername(JSON.parse(localStorage.getItem("userInfo")).username)
+    console.log(JSON.parse(localStorage.getItem("userInfo")).username)
   },[open])
 
   const handleUpdateUsername = async() => {

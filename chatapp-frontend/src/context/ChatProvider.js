@@ -7,16 +7,17 @@ const ChatProvider = ({ children }) => {
   const navigate = useNavigate();
   const [selectedChat, setSelectedChat] = useState();
   const [user, setUser] = useState();
-  const [notification, setNotification] = useState([]);
+  // const [notification, setNotification] = useState([]);
   const [chats, setChats] = useState();
 
+  console.log("USERRRR", user)
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     setUser(userInfo);
     console.log("USER", userInfo)
     
-    if (!userInfo && window.location.pathname === '/') navigate("/login");
+    if (!userInfo && window.location.pathname !=='/signup') navigate("/");
   }, [navigate]);
 
   return (
@@ -26,8 +27,8 @@ const ChatProvider = ({ children }) => {
         setSelectedChat,
         user,
         setUser,
-        notification,
-        setNotification,
+        // notification,
+        // setNotification,
         chats,
         setChats,
       }}

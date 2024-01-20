@@ -19,6 +19,8 @@ import axios from 'axios';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import LoadingButton from '@mui/lab/LoadingButton';
+import SnackBar from '../misc/SnackBar';
 
 const style = {
   position: 'absolute',
@@ -40,7 +42,11 @@ export default function NewGroupModal({children}) {
   const [userList, setUserList] = useState([]);
   const { user, chats, setChats, setSelectedChat } = ChatState();
   const [value, setValue] = useState("1");
-
+  const [loadingChat, setLoadingChat] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarStatus, setSnackbarStatus] = useState("");
+  
   const handleFetchUsers = async () => {
     const config = {
       headers: {
@@ -48,16 +54,14 @@ export default function NewGroupModal({children}) {
       },
     };
     const { data } = await axios.get('http://localhost:4000/api/user?search=', config);
-    console.log("data", data);
+    console.log("list", data);
     setUserList(data);
   }
 
 
   useEffect(() => {
-    if (user) {
-      handleFetchUsers()
-    }
-  },[user])
+    handleFetchUsers()
+  },[])
 
   const handleToggle = (value) => () => {
     const currentIndex = checkedUsers.indexOf(value);
@@ -113,34 +117,36 @@ export default function NewGroupModal({children}) {
     }
   };
 
-  const handleCreatePersonalChat = async (userData) => {
-
+  const handleCreatePersonalChat = async (userId) => {
+    setLoadingChat(true);
     try {
       const config = {
         headers: {
+          "Content-type": "application/json",
           Authorization: `Bearer ${user.token}`,
         },
       };
 
-      const { status, data } = await axios.post(
-        `http://localhost:4000/api/chat/personal`,
+      const { data } = await axios.post(
+        `http://localhost:4000/api/chat`,
         {
-          name: "sender",
-          users: JSON.stringify([userData._id]),
+          "userId": userId
         },
         config
       );
       console.log('lol',data)
 
-      if (status === 201 ){
-        setChats([data, ...chats]);
-      }
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
       setSelectedChat(data);
       handleClose();
 
     } catch (error) {
       console.log(error)
+      setSnackbarMessage("Error fetching the chat")
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
     }
+    setLoadingChat(false)
   };
 
   const handleChangeTab = (event, newValue) => {
@@ -207,7 +213,7 @@ export default function NewGroupModal({children}) {
               value={groupChatName}
               onChange={(e) => setGroupChatName(e.target.value)}
             />
-            <List dense sx={{ width: '100%', bgcolor: 'background.paper' }}>
+            <List dense sx={{ width: '100%', bgcolor: 'background.paper', maxHeight:"180px", overflowY:'auto', mb:1 }}>
               {userList.map((userDetail) => {
                 const labelId = `checkbox-list-secondary-label-${userDetail._id}`;
                 return (
@@ -241,9 +247,9 @@ export default function NewGroupModal({children}) {
             <Typography id="modal-modal-title" variant="h6" component="h2">
                 Start New Chat
             </Typography>
-            <List sx={{ overflowY: 'auto'}}>
+            <List sx={{ overflowY: 'auto', maxHeight:"280px"}}>
               {userList.map((userData) =>
-                <ListItem key={userData._id} button onClick={() => handleCreatePersonalChat(userData)}>
+                <ListItem key={userData._id} button onClick={() => handleCreatePersonalChat(userData._id)}>
                   <ListItemText primary={userData.username}/>
                 </ListItem>
               )}
@@ -252,6 +258,7 @@ export default function NewGroupModal({children}) {
         </Box>
         </TabContext>
       </Modal>
+      <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
     </div>
   );
 }
