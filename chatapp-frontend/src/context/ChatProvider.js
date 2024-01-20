@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import io from 'socket.io-client';
 
 const ChatContext = createContext();
+
+var socket
+const ENDPOINT = "http://localhost:4000";
 
 const ChatProvider = ({ children }) => {
   const navigate = useNavigate();
@@ -9,8 +13,16 @@ const ChatProvider = ({ children }) => {
   const [user, setUser] = useState();
   // const [notification, setNotification] = useState([]);
   const [chats, setChats] = useState();
+  const [onlineUsers, setOnlineUsers] = useState([])
+  useEffect(() => {
+    socket = io(ENDPOINT);
 
-  console.log("USERRRR", user)
+    socket.on('online', (res) => {
+      console.log('online', res)
+      setOnlineUsers(res)
+    })
+  }, [])
+
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -31,6 +43,7 @@ const ChatProvider = ({ children }) => {
         // setNotification,
         chats,
         setChats,
+        onlineUsers
       }}
     >
       {children}

@@ -73,6 +73,10 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
 
     socket.emit('setup', user)
     socket.on("connected", () => {setSocketConnected(true)})
+
+    return () => {
+      socket.disconnect()
+    }
   }, [])
 
 
@@ -188,7 +192,7 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
               ))}
             </List> */}
             <Box sx={{display:'flex', flexDirection:'column', justifyContent:'flex-end', height:'100%', overflowY:'hidden'}}>
-              <Box sx={{display:'flex', flexDirection:'column', overflowY:'scroll', msOverflowStyle: 'none', scrollbarWidth: 'none',  '&::-webkit-scrollbar': {display: 'none'}}}>
+              <Box sx={{display:'flex', flexDirection:'column', overflowY:'scroll', msOverflowStyle: 'none', scrollbarWidth: 'none',  '&::-webkit-scrollbar': {display: 'none'}}} mb='2px'>
                 <ScrollableChat messages={messages}/>
 
               </Box>

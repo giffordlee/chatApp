@@ -7,10 +7,11 @@ import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import NewChatModal from "./NewChatModal";
 import SnackBar from "../misc/SnackBar";
+import { isUserOnline, getSenderId, getSender } from "../misc/ChatLogics";
 
 function ChatList({fetchAgain, setFetchAgain}) {
   const [loggedUser, setLoggedUser] = useState();
-  const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
+  const { selectedChat, setSelectedChat, user, chats, setChats, onlineUsers } = ChatState();
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarStatus, setSnackbarStatus] = useState("");
@@ -42,13 +43,7 @@ function ChatList({fetchAgain, setFetchAgain}) {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
     // setFetchAgain(false);
-  }, [fetchAgain]);
-
-  const getSender = (loggedUser, users) => {
-    console.log(loggedUser, users)
-    return users[0]?._id === loggedUser?._id ? users[1].username : users[0].username;
-  };
-  
+  }, [fetchAgain]);  
 
   return (
     <Paper sx={{height:'100%', width:'100%'}}>
@@ -81,7 +76,7 @@ function ChatList({fetchAgain, setFetchAgain}) {
                     </Typography>
                   ) : <Typography variant="caption" color="grey">No message yet...</Typography>}
               </Stack>
-              <ListItemText align="right" sx={{color:'grey'}} secondary="Online"/>
+              {!chat.isGroupChat && <ListItemText align="right" sx={{color:'grey'}} secondary={isUserOnline(getSenderId(loggedUser, chat.users), onlineUsers) ? 'Online' : 'Offline'}/>}
             </Stack>
           </ListItem>
         ))}

@@ -21,6 +21,8 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 // import LoadingButton from '@mui/lab/LoadingButton';
 import SnackBar from '../misc/SnackBar';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { isUserOnline, getSenderId } from "../misc/ChatLogics";
 
 const style = {
   position: 'absolute',
@@ -40,7 +42,7 @@ export default function NewChatModal({children}) {
   const [groupChatName, setGroupChatName] = useState("")
   const [checkedUsers, setCheckedUsers] = useState([]);
   const [userList, setUserList] = useState([]);
-  const { user, chats, setChats, setSelectedChat } = ChatState();
+  const { user, chats, setChats, setSelectedChat, onlineUsers } = ChatState();
   const [value, setValue] = useState("1");
   const [loadingChat, setLoadingChat] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -190,12 +192,6 @@ export default function NewChatModal({children}) {
     value: PropTypes.number.isRequired,
   };
   
-  function a11yProps(index) {
-    return {
-      id: `simple-tab-${index}`,
-      'aria-controls': `simple-tabpanel-${index}`,
-    };
-  }
 
   return (
     <div>
@@ -263,7 +259,9 @@ export default function NewChatModal({children}) {
             <List sx={{ overflowY: 'auto', maxHeight:"280px"}}>
               {userList.map((userData) =>
                 <ListItem key={userData._id} button onClick={() => handleCreatePersonalChat(userData._id)}>
+                  <AccountCircle sx={{m: 1}}/>
                   <ListItemText primary={userData.username}/>
+                  <Typography variant="caption">{isUserOnline(userData._id, onlineUsers) ? 'Online' : 'Offline'}</Typography>
                 </ListItem>
               )}
             </List>

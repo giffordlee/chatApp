@@ -27,13 +27,19 @@ const io = require('socket.io')(server, {
 let onlineUsers = []
 
 io.on("connection", (socket) => {
-  console.log("connected to socket.io")
+  console.log("connected to socket.io: ", socket.id)
 
   socket.on('setup', (userData) => {
     socket.join(userData._id);
     console.log("setup", userData._id)
+    if (!onlineUsers.some((u) => u.userId === userData._id)) {
+      onlineUsers.push({'userId': userData._id, 'socketId':socket.id});
+    }
+    console.log(onlineUsers)
+    io.emit("online", onlineUsers)
     socket.emit('connected')
   })
+
 
   socket.on('join chat', (room) => {
     socket.join(room);
@@ -50,12 +56,21 @@ io.on("connection", (socket) => {
       
       socket.in(user._id).emit("message received", newMessageReceived)
     })
-
-    socket.off("setup", () => {
-      console.log("USER DISCONNECTED");
-      socket.leave(userData._id)
-    })
   })  
+
+  socket.on('disconnect', () => {
+    const disconnectedUser = onlineUsers.find(user => user.socketId === socket.id);
+    if (disconnectedUser) {
+      onlineUsers = onlineUsers.filter((userData) => userData !== disconnectedUser);
+      io.emit("online", onlineUsers)
+    }
+    console.log("disconnect")
+    console.log(onlineUsers)
+  })
+  socket.off("setup", () => {
+    console.log("USER DISCONNECTED");
+    socket.leave(userData._id)
+  })
 })
 
 app.use(
