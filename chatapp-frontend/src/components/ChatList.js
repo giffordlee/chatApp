@@ -1,10 +1,11 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { ChatState } from "../context/ChatProvider";
-import { List, ListItem, ListItemText, Button, Typography, Stack } from "@mui/material";
+import { List, ListItem, ListItemText, Button, Typography, Stack, Paper} from "@mui/material";
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
-import NewGroupModal from "./NewGroupModal";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import NewChatModal from "./NewChatModal";
 import SnackBar from "../misc/SnackBar";
 
 function ChatList({fetchAgain, setFetchAgain}) {
@@ -40,7 +41,7 @@ function ChatList({fetchAgain, setFetchAgain}) {
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-    setFetchAgain(false);
+    // setFetchAgain(false);
   }, [fetchAgain]);
 
   const getSender = (loggedUser, users) => {
@@ -50,15 +51,15 @@ function ChatList({fetchAgain, setFetchAgain}) {
   
 
   return (
-    <Stack sx={{ height: "100%", borderRight: `1px solid grey`}}>
+    <Paper sx={{height:'100%', width:'100%'}}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h4" sx={{my:1}}>My Chat</Typography>
-        <NewGroupModal>
-          <Button variant="outlined" sx={{mr:1}}>New chat</Button>
-        </NewGroupModal>
+        <NewChatModal>
+          <Button variant="contained" sx={{mr:1, px:1, textTransform:'none'}} endIcon={<AddCircleIcon/>}>New Chat</Button>
+        </NewChatModal>
       </Stack>
       <List
-        sx={{ width: "30vw", overflowY: "auto"}}
+        sx={{ width: "100%", overflowY: "auto"}}
       >
         {chats && chats.map((chat) => (
           <ListItem
@@ -67,26 +68,26 @@ function ChatList({fetchAgain, setFetchAgain}) {
             selected={selectedChat && selectedChat._id === chat._id}
             onClick={() => handleChatClick(chat)}
           >
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Stack direction="row" style={{ display: 'flex', alignItems: 'center', width:"100%" }}>
               {chat.isGroupChat ? <SupervisedUserCircleIcon sx={{m: 1}}/> : <AccountCircle sx={{m: 1}}/>}
-              <div>
+              <Stack sx={{maxWidth:'70%'}}>
                 <ListItemText primary={!chat.isGroupChat ? getSender(loggedUser, chat.users): chat.chatName} />
                 {chat.latestMessage ? (
-                    <Typography variant="caption" color="grey">
+                    <Typography variant="caption" color="grey" sx={{overflow:'hidden', whiteSpace:'nowrap',textOverflow:'ellipsis'}}>
                       <b>{chat.latestMessage.sender.username} : </b>
                       {chat.latestMessage.content.length > 50
                         ? chat.latestMessage.content.substring(0, 51) + '...'
                         : chat.latestMessage.content}
                     </Typography>
                   ) : <Typography variant="caption" color="grey">No message yet...</Typography>}
-              </div>
-            </div>
-            <ListItemText align="right" sx={{color:'grey'}} secondary="Online"/>
+              </Stack>
+              <ListItemText align="right" sx={{color:'grey'}} secondary="Online"/>
+            </Stack>
           </ListItem>
         ))}
       </List>
       <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
-    </Stack>
+    </Paper>
   );
 }
 

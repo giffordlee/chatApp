@@ -19,7 +19,7 @@ import axios from 'axios';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import LoadingButton from '@mui/lab/LoadingButton';
+// import LoadingButton from '@mui/lab/LoadingButton';
 import SnackBar from '../misc/SnackBar';
 
 const style = {
@@ -35,7 +35,7 @@ const style = {
   p: 4,
 };
 
-export default function NewGroupModal({children}) {
+export default function NewChatModal({children}) {
   const [isOpen, setIsOpen] = useState(false);
   const [groupChatName, setGroupChatName] = useState("")
   const [checkedUsers, setCheckedUsers] = useState([]);
@@ -48,14 +48,20 @@ export default function NewGroupModal({children}) {
   const [snackbarStatus, setSnackbarStatus] = useState("");
   
   const handleFetchUsers = async () => {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${user.token}`,
-      },
-    };
-    const { data } = await axios.get('http://localhost:4000/api/user?search=', config);
-    console.log("list", data);
-    setUserList(data);
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const { data } = await axios.get('http://localhost:4000/api/user?search=', config);
+      console.log("list", data);
+      setUserList(data);
+    } catch (error) {
+      setSnackbarMessage("Error fetching user list")
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
+    }
   }
 
 
@@ -89,7 +95,10 @@ export default function NewGroupModal({children}) {
   const handleCreateGroupChat = async () => {
     if (!groupChatName || !checkedUsers) {
       console.log("Fill all fields");
-      return
+      setSnackbarMessage("Fill all fields")
+      setSnackbarStatus("warning")
+      setOpenSnackbar(true)
+      return;
     }
 
     try {
@@ -107,13 +116,17 @@ export default function NewGroupModal({children}) {
         },
         config
       );
-      console.log(data)
       setChats([data, ...chats]);
       setSelectedChat(data);
       handleClose();
-
+      setSnackbarMessage("New group chat created!")
+      setSnackbarStatus("success")
+      setOpenSnackbar(true)
     } catch (error) {
       console.log(error)
+      setSnackbarMessage("Error occurred!")
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
     }
   };
 

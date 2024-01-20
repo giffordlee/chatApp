@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Paper, Typography, Grid, ListItem, ListItemText, Fab, List, Divider, TextField, Stack, CircularProgress} from "@mui/material";
+import { Paper, Typography, Grid, ListItem, ListItemText, Fab, List, Divider, TextField, Stack, CircularProgress, Box} from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 import { ChatState } from '../context/ChatProvider';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import axios from 'axios';
 import io from 'socket.io-client';
+import SnackBar from '../misc/SnackBar';
+import ScrollableChat from './ScrollableChat';
 
 const ENDPOINT = "http://localhost:4000";
 var socket, selectedChatCompare;
@@ -17,6 +19,9 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
   const [newMessage, setNewMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);
   const [loggedUser, setLoggedUser] = useState();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarStatus, setSnackbarStatus] = useState("");
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -53,7 +58,7 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
         message.createdAt = singaporeTimeString
         return message;
       });
-      console.log("HERE",updatedMessages)
+      console.log("fetch messages",updatedMessages)
       setMessages(updatedMessages);
       setLoading(false);
 
@@ -74,12 +79,10 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
 
 
   useEffect(() => {
-    if (user) {
-      fetchMessages()
-      selectedChatCompare = selectedChat;
-    }
+    fetchMessages()
+    selectedChatCompare = selectedChat;
     
-  }, [user, selectedChat])
+  }, [selectedChat])
 
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
@@ -116,14 +119,17 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
           },
           config
         );
-        console.log(":",data)
         socket.emit("new message", data);
         setMessages([...messages, data]);
         fetchMessages()
         setFetchAgain(true)
       } catch (error) {
         console.log("error")
+        setSnackbarMessage("Error Occured!")
+        setSnackbarStatus("error")
+        setOpenSnackbar(true)
       }
+      
     }
   }
 
@@ -136,18 +142,20 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
   };
 
   return (
-    <Paper sx={{ flex: 1, pl: 2 }}>
+    <Paper sx={{ display:'flex', justifyContent:'center', alignItems:'center', height:'100%'}}>
       {loading ? (
         <CircularProgress/>
       ) : (
         selectedChat ? (
-          <Grid>
-            <Stack direction='row'>
-              {selectedChat.isGroupChat ? <SupervisedUserCircleIcon sx={{m: 1}}/> : <AccountCircle sx={{m: 1}}/>}
-              <Typography variant='h5' sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>{!selectedChat.isGroupChat ? getSender(loggedUser, selectedChat.users): selectedChat.chatName}</Typography>
-            </Stack>
-            <Divider />
-            <List sx={{ height: '70vh', overflowY: 'auto' }}>
+          <Box sx={{width:"100%", height:'100%', display:"flex", flexDirection:'column', justifyContent:'space-between'}}>
+            <Box>
+              <Stack direction='row'>
+                {selectedChat.isGroupChat ? <SupervisedUserCircleIcon sx={{m: 1}}/> : <AccountCircle sx={{m: 1}}/>}
+                <Typography variant='h5' sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>{!selectedChat.isGroupChat ? getSender(loggedUser, selectedChat.users): selectedChat.chatName}</Typography>
+              </Stack>
+              <Divider />
+            </Box>
+            {/* <List sx={{ height: '70vh', overflowY: 'auto' }}>
               {messages.map((message, index) => (
                 <ListItem key={index}>
                   <Grid container>
@@ -167,29 +175,36 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
                   </Grid>
                 </ListItem>
               ))}
-            </List>
-            <Divider />
-            <form noValidate>
-              <Grid container style={{ padding: '20px' }}>
-                <Grid item xs={11}>
-                  <TextField 
-                    id="outlined-basic-email" 
-                    label="Enter a message..." 
-                    fullWidth 
-                    value={newMessage}
-                    onChange={handleTyping}
-                  />
+            </List> */}
+            <Box sx={{display:'flex', flexDirection:'column', justifyContent:'flex-end', height:'100%', overflowY:'hidden'}}>
+              <Box sx={{display:'flex', flexDirection:'column', overflowY:'scroll', msOverflowStyle: 'none', scrollbarWidth: 'none',  '&::-webkit-scrollbar': {display: 'none'}}}>
+                <ScrollableChat messages={messages}/>
+
+              </Box>
+            
+              <Divider />
+              <form noValidate>
+                <Grid container style={{ padding: '20px' }}>
+                  <Grid item xs={11}>
+                    <TextField 
+                      label="Enter a message..." 
+                      fullWidth 
+                      value={newMessage}
+                      onChange={handleTyping}
+                    />
+                  </Grid>
+                  <Grid item xs={1} align="right">
+                    <Fab color="primary" aria-label="add" type="submit" onClick={handleSendMessage}><SendIcon/></Fab>
+                  </Grid>
                 </Grid>
-                <Grid item xs={1} align="right">
-                  <Fab color="primary" aria-label="add" type="submit" onClick={handleSendMessage}><SendIcon /></Fab>
-                </Grid>
-              </Grid>
               </form>
-          </Grid>
+            </Box>
+          </Box>
         ) : (
           <Typography variant="h6">Select a chat to view messages</Typography>
         )
       )}
+      <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
     </Paper>
     
   );

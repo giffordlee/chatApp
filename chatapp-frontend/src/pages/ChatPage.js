@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { ChatState } from "../context/ChatProvider";
 import ChatList from "../components/ChatList";
 import ChatContent from "../components/ChatContent";
-import { Box } from "@mui/material";
+import { Grid } from "@mui/material";
 
 function ChatPage() {
-  const { user } = ChatState();
+  const { user, setUser, setSelectedChat } = ChatState();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [fetchAgain, setFetchAgain] = useState(false)
@@ -22,16 +22,24 @@ function ChatPage() {
 
   const SignOut = () => {
     localStorage.removeItem("userInfo")
+    setSelectedChat(null)
+    setUser(null)
     navigate("/");
     console.log("User signed out")
   }
   return (
     <div>
-      <NavigationBar SignOut={SignOut} username={username}/>
-      <Box style={{ display: "flex", height: "100vh" }}>
-        <ChatList fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
-        <ChatContent fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
-      </Box>
+      <Grid container spacing={1} sx={{ display: "flex"}}>
+        <Grid item xs={12} style={{marginBottom:"8px"}} p={0}>
+          <NavigationBar SignOut={SignOut} username={username}/>
+        </Grid>
+        <Grid item xs={3} sx={{width:'100%', height:'91.5vh'}}>
+          <ChatList fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
+        </Grid>
+        <Grid item xs={9} sx={{width:'100%', height:'91.5vh'}}> 
+          <ChatContent fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
+        </Grid>
+      </Grid>
     </div>
   )
 }
