@@ -70,12 +70,10 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
 
   useEffect(() => {
     socket = io(ENDPOINT);
-    
-    if (user) {
-      socket.emit('setup', user)
-      socket.on("connection", () => {setSocketConnected(true)})
-    }
-  }, [user])
+
+    socket.emit('setup', user)
+    socket.on("connected", () => {setSocketConnected(true)})
+  }, [])
 
 
   useEffect(() => {
@@ -90,10 +88,23 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
 
   useEffect(() => {
     socket.on('message received', (newMessageReceived) => {
+      setFetchAgain(!fetchAgain)
 
       if (!selectedChatCompare || selectedChatCompare._id !== newMessageReceived.chat._id) {
         // notify
       } else {
+        const timestamp = new Date(newMessageReceived.updatedAt);
+        const options = {
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true, // Use 12-hour time format
+          timeZone: 'Asia/Singapore', // Specify the time zone
+        };
+        const singaporeTimeString = timestamp.toLocaleString('en-SG', options);
+        newMessageReceived.createdAt = singaporeTimeString
         setMessages([...messages, newMessageReceived])
       }
     })
@@ -122,7 +133,7 @@ function ChatContent({ fetchAgain, setFetchAgain}) {
         socket.emit("new message", data);
         setMessages([...messages, data]);
         fetchMessages()
-        setFetchAgain(true)
+        setFetchAgain(!fetchAgain)
       } catch (error) {
         console.log("error")
         setSnackbarMessage("Error Occured!")
