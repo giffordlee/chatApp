@@ -81,7 +81,7 @@ function LogIn() {
       setSnackbarMessage("Log In Successful")
       setSnackbarStatus("success")
       setOpenSnackbar(true);
-
+      console.log('login', data)
       setUser(data);
       localStorage.setItem("userInfo", JSON.stringify(data));
       setLoading(false);

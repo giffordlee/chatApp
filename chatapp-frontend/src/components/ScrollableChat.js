@@ -20,7 +20,7 @@ function ScrollableChat({messages}) {
               isLastMessage(messages, i, user._id)) && (
               <Typography 
                 variant='caption' 
-                sx={{display:'flex', alignItems:'center'}}
+                sx={{display:'flex', alignItems:'center', fontWeight:'bold'}}
                 mt="3px"
               >
                 {m.sender.username}
@@ -36,7 +36,9 @@ function ScrollableChat({messages}) {
                 borderRadius: "20px",
                 padding: "5px 15px",
                 maxWidth: "75%",
-                wordWrap:'break-word'
+                wordWrap:'break-word',
+                fontFamily:'Lucida Sans Unicode',
+                fontSize:'13px'
               }}
             >
               {m.content}

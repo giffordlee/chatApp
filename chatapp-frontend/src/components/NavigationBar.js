@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Box, AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SettingsModal from './SettingsModal';
+import { ChatState } from '../context/ChatProvider';
+import SnackBar from '../misc/SnackBar';
 
 function NavigationBar({SignOut, username}) {
   const [anchorEl, setAnchorEl] = useState(null);
+  const { user } = ChatState();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarStatus, setSnackbarStatus] = useState("");
 
   const handleDropDown = (event) => {
     setAnchorEl(event.currentTarget);
@@ -32,25 +38,25 @@ function NavigationBar({SignOut, username}) {
             >
               <AccountCircle />
               <Typography sx={{ml:1}}>
-                {username}
+                {user.username}
               </Typography>
             </IconButton>
             <Menu
-              id="menu-appbar"
+              // id="menu-appbar"
               anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
+              // anchorOrigin={{
+              //   vertical: 'bottom',
+              //   horizontal: 'right',
+              // }}
               keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
+              // transformOrigin={{
+              //   vertical: 'top',
+              //   horizontal: 'right',
+              // }}
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <SettingsModal>
+              <SettingsModal setOpenSnackbar={setOpenSnackbar} setSnackbarMessage={setSnackbarMessage} setSnackbarStatus={setSnackbarStatus}> 
                 <MenuItem onClick={handleClose}>Settings</MenuItem>
               </SettingsModal>
               <MenuItem onClick={SignOut}>Sign Out</MenuItem>
@@ -58,6 +64,7 @@ function NavigationBar({SignOut, username}) {
           </div>
         </Toolbar>
       </AppBar>
+      <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
     </Box>
   )
 }

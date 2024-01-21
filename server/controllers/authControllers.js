@@ -112,16 +112,15 @@ module.exports.updateUsername = async (req, res) => {
     }
     const oldUsername = req.user.username
     const user = await User.findOne({ username: oldUsername });
-    console.log(user)
 
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(400).json({ message: "User not found" });
     }
     // Check if the provided password is correct
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(200).json({ message: "Incorrect password" });
+      return res.status(400).json({ message: "Incorrect password" });
     }
 
     // Check if the new username is already taken
@@ -134,8 +133,12 @@ module.exports.updateUsername = async (req, res) => {
     // Update the username
     user.username = newUsername;
     await user.save();
-
-    res.status(200).json({ message: "Username updated successfully", user });
+    console.log('here', user)
+    res.status(200).json({ message: "Username updated successfully", userData: {
+      _id: user._id,
+      username: user.username,
+      token: createSecretToken(user._id),
+    } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });

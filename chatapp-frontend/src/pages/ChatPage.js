@@ -7,18 +7,9 @@ import ChatContent from "../components/ChatContent";
 import { Grid } from "@mui/material";
 
 function ChatPage() {
-  const { user, setUser, setSelectedChat } = ChatState();
+  const { setUser, setSelectedChat } = ChatState();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
   const [fetchAgain, setFetchAgain] = useState(false)
-
-  
-  useEffect(() => {
-    if (user) {
-      console.log("REACHED HERE", user)
-      setUsername(user.username);
-    } 
-  }, [user])
 
   const SignOut = () => {
     localStorage.removeItem("userInfo")
@@ -31,7 +22,7 @@ function ChatPage() {
     <div>
       <Grid container spacing={1} sx={{ display: "flex"}}>
         <Grid item xs={12} style={{marginBottom:"8px"}} p={0}>
-          <NavigationBar SignOut={SignOut} username={username}/>
+          <NavigationBar SignOut={SignOut}/>
         </Grid>
         <Grid item xs={3} sx={{width:'100%', height:'91.5vh'}}>
           <ChatList fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>

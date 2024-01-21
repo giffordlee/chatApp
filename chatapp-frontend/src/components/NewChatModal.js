@@ -10,6 +10,7 @@ import {
   ListItemButton, 
   ListItemText,
   Tab,
+  Badge,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
@@ -126,7 +127,7 @@ export default function NewChatModal({children}) {
       setOpenSnackbar(true)
     } catch (error) {
       console.log(error)
-      setSnackbarMessage("Error occurred!")
+      setSnackbarMessage(error.response.data)
       setSnackbarStatus("error")
       setOpenSnackbar(true)
     }
@@ -249,7 +250,7 @@ export default function NewChatModal({children}) {
               })}
             </List>
             <Button variant="contained" color="primary" onClick={handleCreateGroupChat}>
-              Create Group Chat
+              Create Group
             </Button>
           </TabPanel>
           <TabPanel value="2">
@@ -259,7 +260,16 @@ export default function NewChatModal({children}) {
             <List sx={{ overflowY: 'auto', maxHeight:"280px"}}>
               {userList.map((userData) =>
                 <ListItem key={userData._id} button onClick={() => handleCreatePersonalChat(userData._id)}>
-                  <AccountCircle sx={{m: 1}}/>
+                  {isUserOnline(userData._id, onlineUsers) ? (
+                    <Badge color="success"  badgeContent=" " variant="dot" overlap="circular">
+                      <AccountCircle/>
+                    </Badge>
+                    ) : (
+                    <Badge color="error"  badgeContent=" " variant="dot" overlap="circular">
+                      <AccountCircle/>
+                    </Badge>
+                    )
+                  }
                   <ListItemText primary={userData.username}/>
                   <Typography variant="caption">{isUserOnline(userData._id, onlineUsers) ? 'Online' : 'Offline'}</Typography>
                 </ListItem>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TextField, Box, Typography, Modal, Button } from '@mui/material';
 import { ChatState } from '../context/ChatProvider';
+import SnackBar from '../misc/SnackBar';
 import axios from 'axios';
 
 const style = {
@@ -15,7 +16,7 @@ const style = {
   p: 4,
 };
 
-export default function SettingsModal({children}) {
+export default function SettingsModal({children, setSnackbarMessage ,setSnackbarStatus, setOpenSnackbar}) {
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -28,9 +29,9 @@ export default function SettingsModal({children}) {
   }
 
   useEffect(() => {
-    setUsername(JSON.parse(localStorage.getItem("userInfo")).username)
-    console.log(JSON.parse(localStorage.getItem("userInfo")).username)
-  },[open])
+    setUsername(user.username)
+    console.log(user.username)
+  },[user, open])
 
   const handleUpdateUsername = async() => {
     try {
@@ -48,15 +49,20 @@ export default function SettingsModal({children}) {
         },
         config
       );
-      data.token = user.token
-      data.success = user.sucess
-      console.log("data", data)
-
-      setUser(data)
-      localStorage.setItem("userInfo", JSON.stringify(data));
+      const { message, userData } = data
+      console.log(userData)
+      setUser(userData)
+      localStorage.setItem("userInfo", JSON.stringify(userData));
+      setSnackbarMessage("Username changed successfully!")
+      setSnackbarStatus("success")
+      setOpenSnackbar(true)
       handleClose();
     } catch (error) {
-      console.log(error)
+      setSnackbarMessage(error.response.data.message)
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
+      console.log('here',error.response.data.message)
+      
     }
   };
   
@@ -93,8 +99,8 @@ export default function SettingsModal({children}) {
             onChange={(e) => setPassword(e.target.value)}
           />
           <Button variant="contained" color="primary" onClick={handleUpdateUsername}>
-              Update
-            </Button>
+            Update
+          </Button>
         </Box>
       </Modal>
     </div>

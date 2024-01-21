@@ -5,7 +5,6 @@ function SnackBar({openSnackbar, setOpenSnackbar, snackbarStatus, snackbarMessag
     setOpenSnackbar(false);
     setSnackbarMessage("");
   }
-  
   return (  
     <Snackbar open={openSnackbar} autoHideDuration={5000} onClose={handleCloseSnackbar}>
       <Alert elevation={6} variant="filled" onClose={handleCloseSnackbar} severity={snackbarStatus}>

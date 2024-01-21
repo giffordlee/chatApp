@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { ChatState } from "../context/ChatProvider";
-import { List, ListItem, ListItemText, Button, Typography, Stack, Paper} from "@mui/material";
+import { List, ListItem, ListItemText, Button, Typography, Stack, Paper, Badge} from "@mui/material";
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -64,8 +64,19 @@ function ChatList({fetchAgain, setFetchAgain}) {
             onClick={() => handleChatClick(chat)}
           >
             <Stack direction="row" style={{ display: 'flex', alignItems: 'center', width:"100%" }}>
-              {chat.isGroupChat ? <SupervisedUserCircleIcon sx={{m: 1}}/> : <AccountCircle sx={{m: 1}}/>}
-              <Stack sx={{maxWidth:'70%'}}>
+              {chat.isGroupChat ? 
+                <SupervisedUserCircleIcon/> : 
+                (isUserOnline(getSenderId(loggedUser, chat.users), onlineUsers) ? (
+                <Badge color="success"  badgeContent=" " variant="dot" overlap="circular">
+                  <AccountCircle/>
+                </Badge>
+                ) : (
+                  <Badge color="error"  badgeContent=" " variant="dot" overlap="circular">
+                    <AccountCircle/>
+                  </Badge>
+                ))
+              }
+              <Stack sx={{maxWidth:'70%'}} ml={1}>
                 <ListItemText primary={!chat.isGroupChat ? getSender(loggedUser, chat.users): chat.chatName} />
                 {chat.latestMessage ? (
                     <Typography variant="caption" color="grey" sx={{overflow:'hidden', whiteSpace:'nowrap',textOverflow:'ellipsis'}}>
