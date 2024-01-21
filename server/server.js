@@ -58,6 +58,17 @@ io.on("connection", (socket) => {
     })
   })  
 
+  socket.on('chat created', (chat) => {
+    if (!chat.users) return console.log('chat.users not defined')
+
+    chat.users.forEach((user) => {
+      
+      // if (user._id == chat.groupAdmin._id) return;
+      socket.in(user._id).emit("new chat")
+    })
+  })
+
+
   socket.on('disconnect', () => {
     const disconnectedUser = onlineUsers.find(user => user.socketId === socket.id);
     if (disconnectedUser) {

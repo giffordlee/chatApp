@@ -24,6 +24,10 @@ import TabPanel from '@mui/lab/TabPanel';
 import SnackBar from '../misc/SnackBar';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { isUserOnline, getSenderId } from "../misc/ChatLogics";
+import io from 'socket.io-client'
+
+const ENDPOINT = "http://localhost:4000";
+var socket
 
 const style = {
   position: 'absolute',
@@ -50,6 +54,10 @@ export default function NewChatModal({children}) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarStatus, setSnackbarStatus] = useState("");
   
+  useEffect(() => {
+    socket = io(ENDPOINT);
+  },[])
+
   const handleFetchUsers = async () => {
     try {
       const config = {
@@ -125,6 +133,7 @@ export default function NewChatModal({children}) {
       setSnackbarMessage("New group chat created!")
       setSnackbarStatus("success")
       setOpenSnackbar(true)
+      socket.emit('chat created', data)
     } catch (error) {
       console.log(error)
       setSnackbarMessage(error.response.data)
@@ -155,7 +164,7 @@ export default function NewChatModal({children}) {
       if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
       setSelectedChat(data);
       handleClose();
-
+      socket.emit('chat created', data)
     } catch (error) {
       console.log(error)
       setSnackbarMessage("Error fetching the chat")

@@ -5,11 +5,31 @@ import { ChatState } from "../context/ChatProvider";
 import ChatList from "../components/ChatList";
 import ChatContent from "../components/ChatContent";
 import { Grid } from "@mui/material";
+import io from 'socket.io-client'
+
+const ENDPOINT = "http://localhost:4000";
+var socket
 
 function ChatPage() {
-  const { setUser, setSelectedChat } = ChatState();
+  const { setUser, setSelectedChat, user } = ChatState();
   const navigate = useNavigate();
   const [fetchAgain, setFetchAgain] = useState(false)
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+
+    socket.emit('setup', user)
+    return () => {
+      socket.disconnect()
+    }
+  },[])
+
+  useEffect(() => {
+    socket.on('new chat', () => {
+      console.log("new chat")
+      setFetchAgain(!fetchAgain)
+    })
+  })
 
   const SignOut = () => {
     localStorage.removeItem("userInfo")
