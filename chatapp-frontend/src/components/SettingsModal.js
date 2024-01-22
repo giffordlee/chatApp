@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TextField, Box, Typography, Modal, Button } from '@mui/material';
 import { ChatState } from '../context/ChatProvider';
-import SnackBar from '../misc/SnackBar';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
@@ -107,7 +106,7 @@ export default function SettingsModal({children, setSnackbarMessage ,setSnackbar
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button variant="contained" color="primary" onClick={handleUpdateUsername}>
+          <Button variant="contained" color="primary" onClick={handleUpdateUsername} sx={{mr:1, px:1, textTransform:'none'}}>
             Update
           </Button>
         </Box>

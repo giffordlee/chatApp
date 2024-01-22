@@ -39,7 +39,7 @@ function ChatPage() {
       const { oldUsername, newUsername } = data;
       console.log(oldUsername,newUsername)
       setChats(chats.map((c) => {
-        if (c.latestMessage && c.latestMessage.sender.username == oldUsername) {
+        if (c.latestMessage && c.latestMessage.sender.username === oldUsername) {
           c.latestMessage.sender.username = newUsername
         }
         c.users= c.users.map((u) => {
@@ -75,7 +75,7 @@ function ChatPage() {
           <NavigationBar SignOut={SignOut}/>
         </Grid>
         <Grid item xs={3} sx={{width:'100%', height:'91.5vh'}}>
-          <ChatList fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} setPage={setPage} setDisableLoadMore={setDisableLoadMore}/>
+          <ChatList fetchAgain={fetchAgain} setPage={setPage} setDisableLoadMore={setDisableLoadMore}/>
         </Grid>
         <Grid item xs={9} sx={{width:'100%', height:'91.5vh'}}> 
           <ChatContent 

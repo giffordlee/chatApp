@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paper, Typography, Grid, ListItem, ListItemText, Fab, List, Divider, TextField, Stack, CircularProgress, Box, Button} from "@mui/material";
+import { Paper, Typography, Grid, Fab, Divider, TextField, Stack, Button, Box} from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 import { ChatState } from '../context/ChatProvider';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -8,13 +8,12 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import SnackBar from '../misc/SnackBar';
 import ScrollableChat from './ScrollableChat';
-import LoadingButton from '@mui/lab/LoadingButton';
 
 const ENDPOINT = "http://localhost:4000";
 var socket, selectedChatCompare;
 
 function ChatContent({ fetchAgain, setFetchAgain, page, setPage, disableLoadMore, setDisableLoadMore, messages, setMessages}) {
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const { user, selectedChat } = ChatState();
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);

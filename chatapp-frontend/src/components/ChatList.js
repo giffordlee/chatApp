@@ -9,7 +9,7 @@ import NewChatModal from "./NewChatModal";
 import SnackBar from "../misc/SnackBar";
 import { isUserOnline, getSenderId, getSender } from "../misc/ChatLogics";
 
-function ChatList({fetchAgain, setFetchAgain, setPage, setDisableLoadMore}) {
+function ChatList({fetchAgain, setPage, setDisableLoadMore}) {
   const [loggedUser, setLoggedUser] = useState();
   const { selectedChat, setSelectedChat, user, chats, setChats, onlineUsers } = ChatState();
   const [openSnackbar, setOpenSnackbar] = useState(false);
