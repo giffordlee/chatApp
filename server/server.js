@@ -68,6 +68,10 @@ io.on("connection", (socket) => {
     })
   })
 
+  socket.on('username updated', (usernames) => {
+    const { oldUsername, newUsername } = usernames;
+    io.emit('new username', {oldUsername:oldUsername, newUsername:newUsername})
+  })
 
   socket.on('disconnect', () => {
     const disconnectedUser = onlineUsers.find(user => user.socketId === socket.id);
