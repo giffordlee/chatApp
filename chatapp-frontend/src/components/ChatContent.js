@@ -13,9 +13,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 const ENDPOINT = "http://localhost:4000";
 var socket, selectedChatCompare;
 
-function ChatContent({ fetchAgain, setFetchAgain, page, setPage, disableLoadMore, setDisableLoadMore}) {
+function ChatContent({ fetchAgain, setFetchAgain, page, setPage, disableLoadMore, setDisableLoadMore, messages, setMessages}) {
   const { user, selectedChat, setSelectedChat } = ChatState();
-  const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);

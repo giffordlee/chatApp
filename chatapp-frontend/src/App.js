@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/chats" element={user ? <ChatPage/> : <Navigate to="/"/>}/>
+        <Route path="/chats" element={user ? <ChatPage/> : <Navigate to="/" replace='true'/>}/>
         <Route path="/" element={<LogIn/>}/>
         <Route path="/signup" element={<SignUp/>}/>
         <Route path="*" element={<Navigate to="/"/>}/>

@@ -3,6 +3,10 @@ import { TextField, Box, Typography, Modal, Button } from '@mui/material';
 import { ChatState } from '../context/ChatProvider';
 import SnackBar from '../misc/SnackBar';
 import axios from 'axios';
+import { io } from 'socket.io-client';
+
+var socket
+const ENDPOINT = "http://localhost:4000";
 
 const style = {
   position: 'absolute',
@@ -22,6 +26,10 @@ export default function SettingsModal({children, setSnackbarMessage ,setSnackbar
   const [password, setPassword] = useState("");
   const {user, setUser} = ChatState();
 
+  useEffect(() => {
+    socket = io(ENDPOINT);
+  }, [])
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -40,6 +48,8 @@ export default function SettingsModal({children, setSnackbarMessage ,setSnackbar
         },
       };
 
+      const oldUsername = user.username;
+
       const { data } = await axios.post(
         `http://localhost:4000/api/user/update`,
         {
@@ -48,7 +58,7 @@ export default function SettingsModal({children, setSnackbarMessage ,setSnackbar
         },
         config
       );
-      const { message, userData } = data
+      const { userData } = data
       console.log(userData)
       setUser(userData)
       localStorage.setItem("userInfo", JSON.stringify(userData));
@@ -56,6 +66,7 @@ export default function SettingsModal({children, setSnackbarMessage ,setSnackbar
       setSnackbarStatus("success")
       setOpenSnackbar(true)
       handleClose();
+      socket.emit("username updated", {oldUsername:oldUsername, newUsername:userData.username})
     } catch (error) {
       setSnackbarMessage(error.response.data.message)
       setSnackbarStatus("error")
