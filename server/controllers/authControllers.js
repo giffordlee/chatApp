@@ -3,51 +3,103 @@ const { createSecretToken } = require("../utils/SecretToken");
 const bcrypt = require("bcryptjs");
 
 module.exports.Signup = async (req, res, next) => {
+  // try {
+  //   const { password, username, createdAt } = req.body;
+  //   const existingUser = await User.findOne({ username });
+  //   if (existingUser) {
+  //     return res.json({ message: "User already exists" });
+  //   }
+  //   const user = await User.create({ password, username, createdAt });
+  //   const token = createSecretToken(user._id);
+  //   res.cookie("token", token, {
+  //     withCredentials: true,
+  //     httpOnly: false,
+  //   });
+  //   res
+  //     .status(201)
+  //     .json({ message: "User signed up successfully", success: true, user, token: token});
+  //   next();
+  // } catch (error) {
+  //   console.error(error);
+  // }
   try {
-    const { password, username, createdAt } = req.body;
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.json({ message: "User already exists" });
+    const { username,password } = req.body;
+
+    if (!username || !password) {
+      res.status(400);
+      throw new Error("Please Enter all the Feilds");
     }
-    const user = await User.create({ password, username, createdAt });
-    const token = createSecretToken(user._id);
-    res.cookie("token", token, {
-      withCredentials: true,
-      httpOnly: false,
+
+    const userExists = await User.findOne({ username });
+
+    if (userExists) {
+      return res.status(400).json({message: 'Username taken! Please choose another username'});
+      // throw new Error("User already exists");
+    }
+
+    const user = await User.create({
+      username,
+      password
     });
-    res
-      .status(201)
-      .json({ message: "User signed up successfully", success: true, user, token: token});
-    next();
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        username: user.username,
+        token: createSecretToken(user._id),
+      });
+    } else {
+      res.status(400);
+      throw new Error("User not found");
+    }
   } catch (error) {
-    console.error(error);
-  }
+    res.status(400);
+    throw new Error(error.message);
+  } 
 };
 
 module.exports.Login = async (req, res, next) => {
+  // try {
+  //   const { username, password } = req.body;
+  //   if(!username || !password ){
+  //     return res.json({message:'All fields are required'})
+  //   }
+  //   const user = await User.findOne({ username });
+  //   if(!user){
+  //     return res.json({message:'Incorrect password or username' }) 
+  //   }
+  //   const auth = await bcrypt.compare(password,user.password)
+  //   if (!auth) {
+  //     return res.json({message:'Incorrect password or username' }) 
+  //   }
+  //    const token = createSecretToken(user._id);
+  //    res.cookie("token", token, {
+  //      withCredentials: true,
+  //      httpOnly: false,
+  //    });
+  //    res.status(201).json({ message: "User logged in successfully", success: true, user, token: token});
+  //    next()
+  // } catch (error) {
+  //   console.error(error);
+  // }
   try {
     const { username, password } = req.body;
-    if(!username || !password ){
-      return res.json({message:'All fields are required'})
-    }
+
     const user = await User.findOne({ username });
-    if(!user){
-      return res.json({message:'Incorrect password or username' }) 
+
+    if (user && (await user.matchPassword(password))) {
+      res.status(201).json({
+        _id: user._id,
+        username: user.username,
+        token: createSecretToken(user._id),
+      });
+    } else {
+      res.status(401).json({message: "Invalid username or password"});
     }
-    const auth = await bcrypt.compare(password,user.password)
-    if (!auth) {
-      return res.json({message:'Incorrect password or username' }) 
-    }
-     const token = createSecretToken(user._id);
-     res.cookie("token", token, {
-       withCredentials: true,
-       httpOnly: false,
-     });
-     res.status(201).json({ message: "User logged in successfully", success: true, user, token: token});
-     next()
   } catch (error) {
-    console.error(error);
-  }
+    res.status(400);
+    throw new Error(error.message);
+  } 
 }
 
 module.exports.searchUsers = async (req, res) => {
@@ -69,16 +121,15 @@ module.exports.updateUsername = async (req, res) => {
     }
     const oldUsername = req.user.username
     const user = await User.findOne({ username: oldUsername });
-    console.log(user)
 
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(400).json({ message: "User not found" });
     }
     // Check if the provided password is correct
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(200).json({ message: "Incorrect password" });
+      return res.status(400).json({ message: "Incorrect password" });
     }
 
     // Check if the new username is already taken
@@ -91,8 +142,12 @@ module.exports.updateUsername = async (req, res) => {
     // Update the username
     user.username = newUsername;
     await user.save();
-
-    res.status(200).json({ message: "Username updated successfully", user });
+    console.log('updated username', user)
+    res.status(200).json({ message: "Username updated successfully", userData: {
+      _id: user._id,
+      username: user.username,
+      token: createSecretToken(user._id),
+    } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });

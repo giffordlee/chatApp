@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   TextField,
-  Button,
   Typography,
   Container,
   Paper,
@@ -9,8 +8,10 @@ import {
   IconButton,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import SnackBar from '../misc/SnackBar';
 
 function SignUp() {
   const navigate = useNavigate();
@@ -18,6 +19,16 @@ function SignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarStatus, setSnackbarStatus] = useState("");
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+
+    if (user) navigate("/chats");
+  }, [navigate]);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -38,44 +49,96 @@ function SignUp() {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    if (password === confirmPassword) {
-      try {
-        const { data } = await axios.post(
-          "http://localhost:4000/api/user/signup",
-          {
-            "username": username,
-            "password": password
-          },
-          { withCredentials: true }
-        );
-        const { success, message } = data;
-        if (success) {
-          handleSuccess(data);
-          setTimeout(() => {
-            navigate("/");
-          }, 1000);
-          localStorage.setItem("userInfo", JSON.stringify(data));
-        } else {
-          handleError(message);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      console.log("Password dont match")
+    setLoading(true)
+    if (!username || !password || !confirmPassword) {
+      setSnackbarMessage("Please Fill all Fields")
+      setSnackbarStatus("warning")
+      setOpenSnackbar(true);
+      setLoading(false)
+      return;
     }
+    if (password !== confirmPassword) {
+      setSnackbarMessage("Passwords Do Not Match")
+      setSnackbarStatus("warning")
+      setOpenSnackbar(true);
+      setLoading(false)
+      return;
+    }
+    console.log(username, password);
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+      const { data, status } = await axios.post(
+        "http://localhost:4000/api/user/signup",
+        {
+          "username": username,
+          "password": password
+        },
+        config
+      );
+
+      if (status !== 201) {
+        setSnackbarMessage("Error Occured!!")
+        setSnackbarStatus("error")
+        setOpenSnackbar(true)
+        setLoading(false);
+        return;
+      }
+      console.log(data);
+      setSnackbarMessage("Registration Successful")
+      setSnackbarStatus("success")
+      setOpenSnackbar(true);
+
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      setLoading(false);
+      navigate("/chats");
+    } catch (error) {
+      setSnackbarMessage(error.response.data.message)
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
+      setLoading(false);
+    }
+    // if (password === confirmPassword) {
+    //   try {
+    //     const { data } = await axios.post(
+    //       "http://localhost:4000/api/user/signup",
+    //       {
+    //         "username": username,
+    //         "password": password
+    //       },
+    //       { withCredentials: true }
+    //     );
+    //     const { success, message } = data;
+    //     if (success) {
+    //       handleSuccess(data);
+    //       setTimeout(() => {
+    //         navigate("/chats");
+    //       }, 1000);
+    //       localStorage.setItem("userInfo", JSON.stringify(data));
+    //     } else {
+    //       handleError(message);
+    //     }
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // } else {
+    //   console.log("Password dont match")
+    // }
   };
 
-  const handleError = (err) => {
-    console.log("error: ", err)
-  };
-  const handleSuccess = (msg) => {
-    console.log("success: ", msg)
-    setUsername('');
-    setPassword('');
-    setConfirmPassword('');
-  };
-  
+  // const handleError = (err) => {
+  //   console.log("error: ", err)
+  // };
+  // const handleSuccess = (msg) => {
+  //   console.log("success: ", msg)
+  //   setUsername('');
+  //   setPassword('');
+  //   setConfirmPassword('');
+  // };
+
   return (
     <Container component="main" maxWidth="xs" style={{ marginTop: '8vh'}}>
       <Paper style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2vh'}}>
@@ -140,18 +203,20 @@ function SignUp() {
               ),
             }}
           />
-          <Button
-            type="button"
+          <LoadingButton
+            type="submit"
             fullWidth
             variant="contained"
             color="primary"
             style={{ margin: '1rem 0 2rem' }}
+            loading={loading}
             onClick={handleSignup}
           >
             Sign Up
-          </Button>
+          </LoadingButton>
         </form>
-        <Typography>Already have an account? <Link to={"/login"}>Log In</Link></Typography>
+        <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
+        <Typography>Already have an account? <Link to={"/"}>Log In</Link></Typography>
       </Paper>
     </Container>
   );

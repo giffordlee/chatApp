@@ -10,6 +10,7 @@ import {
   ListItemButton, 
   ListItemText,
   Tab,
+  Badge,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
@@ -19,6 +20,14 @@ import axios from 'axios';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+// import LoadingButton from '@mui/lab/LoadingButton';
+import SnackBar from '../misc/SnackBar';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { isUserOnline, getSenderId } from "../misc/ChatLogics";
+import io from 'socket.io-client'
+
+const ENDPOINT = "http://localhost:4000";
+var socket
 
 const style = {
   position: 'absolute',
@@ -33,31 +42,43 @@ const style = {
   p: 4,
 };
 
-export default function NewGroupModal({children}) {
+export default function NewChatModal({children}) {
   const [isOpen, setIsOpen] = useState(false);
   const [groupChatName, setGroupChatName] = useState("")
   const [checkedUsers, setCheckedUsers] = useState([]);
   const [userList, setUserList] = useState([]);
-  const { user, chats, setChats, setSelectedChat } = ChatState();
+  const { user, chats, setChats, setSelectedChat, onlineUsers } = ChatState();
   const [value, setValue] = useState("1");
+  const [loadingChat, setLoadingChat] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarStatus, setSnackbarStatus] = useState("");
+  
+  useEffect(() => {
+    socket = io(ENDPOINT);
+  },[])
 
   const handleFetchUsers = async () => {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${user.token}`,
-      },
-    };
-    const { data } = await axios.get('http://localhost:4000/api/user?search=', config);
-    console.log("data", data);
-    setUserList(data);
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const { data } = await axios.get('http://localhost:4000/api/user?search=', config);
+      console.log("fetched users", data);
+      setUserList(data);
+    } catch (error) {
+      setSnackbarMessage("Error fetching user list")
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
+    }
   }
 
 
   useEffect(() => {
-    if (user) {
-      handleFetchUsers()
-    }
-  },[user])
+    handleFetchUsers()
+  },[])
 
   const handleToggle = (value) => () => {
     const currentIndex = checkedUsers.indexOf(value);
@@ -84,8 +105,10 @@ export default function NewGroupModal({children}) {
   }
   const handleCreateGroupChat = async () => {
     if (!groupChatName || !checkedUsers) {
-      console.log("Fill all fields");
-      return
+      setSnackbarMessage("Fill all fields")
+      setSnackbarStatus("warning")
+      setOpenSnackbar(true)
+      return;
     }
 
     try {
@@ -103,44 +126,51 @@ export default function NewGroupModal({children}) {
         },
         config
       );
-      console.log(data)
       setChats([data, ...chats]);
       setSelectedChat(data);
       handleClose();
-
+      setSnackbarMessage("New group chat created!")
+      setSnackbarStatus("success")
+      setOpenSnackbar(true)
+      socket.emit('chat created', data)
     } catch (error) {
       console.log(error)
+      setSnackbarMessage(error.response.data)
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
     }
   };
 
-  const handleCreatePersonalChat = async (userData) => {
-
+  const handleCreatePersonalChat = async (userId) => {
+    setLoadingChat(true);
     try {
       const config = {
         headers: {
+          "Content-type": "application/json",
           Authorization: `Bearer ${user.token}`,
         },
       };
 
-      const { status, data } = await axios.post(
-        `http://localhost:4000/api/chat/personal`,
+      const { data } = await axios.post(
+        `http://localhost:4000/api/chat`,
         {
-          name: "sender",
-          users: JSON.stringify([userData._id]),
+          "userId": userId
         },
         config
       );
-      console.log('lol',data)
+      console.log('created personal chat',data)
 
-      if (status === 201 ){
-        setChats([data, ...chats]);
-      }
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
       setSelectedChat(data);
       handleClose();
-
+      socket.emit('chat created', data)
     } catch (error) {
       console.log(error)
+      setSnackbarMessage("Error fetching the chat")
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
     }
+    setLoadingChat(false)
   };
 
   const handleChangeTab = (event, newValue) => {
@@ -171,12 +201,6 @@ export default function NewGroupModal({children}) {
     value: PropTypes.number.isRequired,
   };
   
-  function a11yProps(index) {
-    return {
-      id: `simple-tab-${index}`,
-      'aria-controls': `simple-tabpanel-${index}`,
-    };
-  }
 
   return (
     <div>
@@ -207,7 +231,7 @@ export default function NewGroupModal({children}) {
               value={groupChatName}
               onChange={(e) => setGroupChatName(e.target.value)}
             />
-            <List dense sx={{ width: '100%', bgcolor: 'background.paper' }}>
+            <List dense sx={{ width: '100%', bgcolor: 'background.paper', maxHeight:"180px", overflowY:'auto', mb:1 }}>
               {userList.map((userDetail) => {
                 const labelId = `checkbox-list-secondary-label-${userDetail._id}`;
                 return (
@@ -233,18 +257,31 @@ export default function NewGroupModal({children}) {
                 );
               })}
             </List>
-            <Button variant="contained" color="primary" onClick={handleCreateGroupChat}>
-              Create Group Chat
+            <Button variant="contained" color="primary" sx={{textTransform:'none', mr:1, px:1}} onClick={handleCreateGroupChat}>
+              Create Group
             </Button>
           </TabPanel>
           <TabPanel value="2">
             <Typography id="modal-modal-title" variant="h6" component="h2">
                 Start New Chat
             </Typography>
-            <List sx={{ overflowY: 'auto'}}>
+            <List sx={{ overflowY: 'auto', maxHeight:"280px"}}>
               {userList.map((userData) =>
-                <ListItem key={userData._id} button onClick={() => handleCreatePersonalChat(userData)}>
+                <ListItem key={userData._id} button onClick={() => handleCreatePersonalChat(userData._id)}>
+                  {isUserOnline(userData._id, onlineUsers) ? (
+                    <Badge color="success"  badgeContent=" " variant="dot" overlap="circular">
+                      <AccountCircle/>
+                    </Badge>
+                    ) : (
+                    <Badge color="error"  badgeContent=" " variant="dot" overlap="circular">
+                      <AccountCircle/>
+                    </Badge>
+                    )
+                  }
                   <ListItemText primary={userData.username}/>
+                  <Typography variant="caption" sx={{color: isUserOnline(userData._id, onlineUsers) ? '#2e7d32' : '#d32f2f'}}>
+                    {isUserOnline(userData._id, onlineUsers) ? 'Online' : 'Offline'}
+                  </Typography>
                 </ListItem>
               )}
             </List>
@@ -252,6 +289,7 @@ export default function NewGroupModal({children}) {
         </Box>
         </TabContext>
       </Modal>
+      <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
     </div>
   );
 }

@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { TextField, Box, Typography, Modal, Button } from '@mui/material';
 import { ChatState } from '../context/ChatProvider';
 import axios from 'axios';
+import { io } from 'socket.io-client';
+
+var socket
+const ENDPOINT = "http://localhost:4000";
 
 const style = {
   position: 'absolute',
@@ -15,11 +19,15 @@ const style = {
   p: 4,
 };
 
-export default function SettingsModal({children}) {
+export default function SettingsModal({children, setSnackbarMessage ,setSnackbarStatus, setOpenSnackbar}) {
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const {user, setUser} = ChatState();
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+  }, [])
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -28,9 +36,8 @@ export default function SettingsModal({children}) {
   }
 
   useEffect(() => {
-    setUsername(JSON.parse(localStorage.getItem("userInfo")).user.username)
-    console.log(JSON.parse(localStorage.getItem("userInfo")).user.username)
-  },[open])
+    setUsername(user.username)
+  },[user, open])
 
   const handleUpdateUsername = async() => {
     try {
@@ -40,6 +47,8 @@ export default function SettingsModal({children}) {
         },
       };
 
+      const oldUsername = user.username;
+
       const { data } = await axios.post(
         `http://localhost:4000/api/user/update`,
         {
@@ -48,15 +57,20 @@ export default function SettingsModal({children}) {
         },
         config
       );
-      data.token = user.token
-      data.success = user.sucess
-      console.log("data", data)
-
-      setUser(data)
-      localStorage.setItem("userInfo", JSON.stringify(data));
+      const { userData } = data
+      console.log(userData)
+      setUser(userData)
+      localStorage.setItem("userInfo", JSON.stringify(userData));
+      setSnackbarMessage("Username changed successfully!")
+      setSnackbarStatus("success")
+      setOpenSnackbar(true)
       handleClose();
+      socket.emit("username updated", {oldUsername:oldUsername, newUsername:userData.username})
     } catch (error) {
-      console.log(error)
+      setSnackbarMessage(error.response.data.message)
+      setSnackbarStatus("error")
+      setOpenSnackbar(true)
+      
     }
   };
   
@@ -92,9 +106,9 @@ export default function SettingsModal({children}) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button variant="contained" color="primary" onClick={handleUpdateUsername}>
-              Update
-            </Button>
+          <Button variant="contained" color="primary" onClick={handleUpdateUsername} sx={{mr:1, px:1, textTransform:'none'}}>
+            Update
+          </Button>
         </Box>
       </Modal>
     </div>
