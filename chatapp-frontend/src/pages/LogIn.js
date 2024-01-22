@@ -87,36 +87,12 @@ function LogIn() {
       setLoading(false);
       navigate("/chats");
     } catch (error) {
-      setSnackbarMessage("Error Occured!")
+      console.log(error)
+      setSnackbarMessage(error.response.data.message)
       setSnackbarStatus("error")
       setOpenSnackbar(true)
       setLoading(false);
     }
-
-    // try {
-    //   const { data } = await axios.post(
-    //     "http://localhost:4000/api/user/login",
-    //     {
-    //       "username": username,
-    //       "password": password
-    //     },
-    //     { withCredentials: true }
-    //   );
-    //   console.log('pop',data);
-    //   const { success, message } = data;
-    //   if (success) {
-    //     handleSuccess(message);
-    //     setTimeout(() => {
-    //       navigate("/");
-    //     }, 1000);
-    //     localStorage.setItem("userInfo", JSON.stringify(data));
-    //   } else {
-    //     handleError(message);
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    // }
-    
   };
 
   return (

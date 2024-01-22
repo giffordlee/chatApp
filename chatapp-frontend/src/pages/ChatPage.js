@@ -15,7 +15,7 @@ function ChatPage() {
   const navigate = useNavigate();
   const [fetchAgain, setFetchAgain] = useState(false)
   const [page, setPage] = useState(1);
-  const [disableLoadMore, setDisableLoadMore] = useState(false);
+  const [disableLoadMore, setDisableLoadMore] = useState(true);
   const [messages, setMessages] = useState([])
 
   useEffect(() => {

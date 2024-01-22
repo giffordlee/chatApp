@@ -26,7 +26,7 @@ function ChatContent({ fetchAgain, setFetchAgain, page, setPage, disableLoadMore
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
-
+    setDisableLoadMore(false)
     try {
       const config = {
         headers: {
@@ -41,9 +41,8 @@ function ChatContent({ fetchAgain, setFetchAgain, page, setPage, disableLoadMore
         config
       );
 
-      if (data.length === 0) {
+      if (data.length < 5) {
         setDisableLoadMore(true)
-        return;
       }
       
       const updatedMessages = data.map(message => {

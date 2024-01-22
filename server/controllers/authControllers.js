@@ -22,35 +22,40 @@ module.exports.Signup = async (req, res, next) => {
   // } catch (error) {
   //   console.error(error);
   // }
-  const { username,password } = req.body;
+  try {
+    const { username,password } = req.body;
 
-  if (!username || !password) {
-    res.status(400);
-    throw new Error("Please Enter all the Feilds");
-  }
+    if (!username || !password) {
+      res.status(400);
+      throw new Error("Please Enter all the Feilds");
+    }
 
-  const userExists = await User.findOne({ username });
+    const userExists = await User.findOne({ username });
 
-  if (userExists) {
-    return res.status(400).json({message: 'User exists'});
-    // throw new Error("User already exists");
-  }
+    if (userExists) {
+      return res.status(400).json({message: 'Username taken! Please choose another username'});
+      // throw new Error("User already exists");
+    }
 
-  const user = await User.create({
-    username,
-    password
-  });
-
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      username: user.username,
-      token: createSecretToken(user._id),
+    const user = await User.create({
+      username,
+      password
     });
-  } else {
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        username: user.username,
+        token: createSecretToken(user._id),
+      });
+    } else {
+      res.status(400);
+      throw new Error("User not found");
+    }
+  } catch (error) {
     res.status(400);
-    throw new Error("User not found");
-  }
+    throw new Error(error.message);
+  } 
 };
 
 module.exports.Login = async (req, res, next) => {
@@ -77,20 +82,24 @@ module.exports.Login = async (req, res, next) => {
   // } catch (error) {
   //   console.error(error);
   // }
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
+    const user = await User.findOne({ username });
 
-  if (user && (await user.matchPassword(password))) {
-    res.status(201).json({
-      _id: user._id,
-      username: user.username,
-      token: createSecretToken(user._id),
-    });
-  } else {
-    res.status(401).json({message: "Invalid Email or Password"});
-    // throw new Error("Invalid Email or Password");
-  }
+    if (user && (await user.matchPassword(password))) {
+      res.status(201).json({
+        _id: user._id,
+        username: user.username,
+        token: createSecretToken(user._id),
+      });
+    } else {
+      res.status(401).json({message: "Invalid username or password"});
+    }
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  } 
 }
 
 module.exports.searchUsers = async (req, res) => {

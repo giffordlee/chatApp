@@ -90,7 +90,17 @@ function ChatList({fetchAgain, setFetchAgain, setPage, setDisableLoadMore}) {
                     </Typography>
                   ) : <Typography variant="caption" color="grey">No message yet...</Typography>}
               </Stack>
-              {!chat.isGroupChat && <ListItemText align="right" sx={{color:'grey'}} secondary={isUserOnline(getSenderId(loggedUser, chat.users), onlineUsers) ? 'Online' : 'Offline'}/>}
+              {!chat.isGroupChat && 
+                <ListItemText 
+                  align="right" 
+                  disableTypography
+                  primary={
+                    <Typography variant="caption" sx={{color: isUserOnline(getSenderId(loggedUser, chat.users), onlineUsers) ? '#2e7d32' : '#d32f2f'}}>
+                      {isUserOnline(getSenderId(loggedUser, chat.users), onlineUsers) ? 'Online' : 'Offline'}
+                    </Typography>
+                  }
+                />
+              }
             </Stack>
           </ListItem>
         ))}

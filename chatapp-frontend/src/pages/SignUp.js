@@ -96,7 +96,7 @@ function SignUp() {
       setLoading(false);
       navigate("/chats");
     } catch (error) {
-      setSnackbarMessage("Error Occured!")
+      setSnackbarMessage(error.response.data.message)
       setSnackbarStatus("error")
       setOpenSnackbar(true)
       setLoading(false);
@@ -129,15 +129,15 @@ function SignUp() {
     // }
   };
 
-  const handleError = (err) => {
-    console.log("error: ", err)
-  };
-  const handleSuccess = (msg) => {
-    console.log("success: ", msg)
-    setUsername('');
-    setPassword('');
-    setConfirmPassword('');
-  };
+  // const handleError = (err) => {
+  //   console.log("error: ", err)
+  // };
+  // const handleSuccess = (msg) => {
+  //   console.log("success: ", msg)
+  //   setUsername('');
+  //   setPassword('');
+  //   setConfirmPassword('');
+  // };
 
   return (
     <Container component="main" maxWidth="xs" style={{ marginTop: '8vh'}}>

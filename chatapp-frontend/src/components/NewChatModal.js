@@ -257,7 +257,7 @@ export default function NewChatModal({children}) {
                 );
               })}
             </List>
-            <Button variant="contained" color="primary" onClick={handleCreateGroupChat}>
+            <Button variant="contained" color="primary" sx={{textTransform:'none', mr:1, px:1}} onClick={handleCreateGroupChat}>
               Create Group
             </Button>
           </TabPanel>
@@ -279,7 +279,9 @@ export default function NewChatModal({children}) {
                     )
                   }
                   <ListItemText primary={userData.username}/>
-                  <Typography variant="caption">{isUserOnline(userData._id, onlineUsers) ? 'Online' : 'Offline'}</Typography>
+                  <Typography variant="caption" sx={{color: isUserOnline(userData._id, onlineUsers) ? '#2e7d32' : '#d32f2f'}}>
+                    {isUserOnline(userData._id, onlineUsers) ? 'Online' : 'Offline'}
+                  </Typography>
                 </ListItem>
               )}
             </List>
