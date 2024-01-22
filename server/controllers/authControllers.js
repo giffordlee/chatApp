@@ -133,7 +133,7 @@ module.exports.updateUsername = async (req, res) => {
     // Update the username
     user.username = newUsername;
     await user.save();
-    console.log('here', user)
+    console.log('updated username', user)
     res.status(200).json({ message: "Username updated successfully", userData: {
       _id: user._id,
       username: user.username,

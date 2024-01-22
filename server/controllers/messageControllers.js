@@ -36,11 +36,17 @@ module.exports.sendMessage = async (req, res) => {
 }
 
 module.exports.allMessages = async (req, res) => {
+  const page = parseInt(req.params.page);
+  const pageSize = 5;
   try {
     const messages = await Message.find({ chat: req.params.chatId })
       .populate("sender", "username")
-      .populate("chat");
-    res.json(messages);
+      .populate("chat")
+      .sort({createdAt:-1})
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      
+    res.json(messages.reverse());
   } catch (error) {
     res.status(400);
     throw new Error(error.message);

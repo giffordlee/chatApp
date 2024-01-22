@@ -66,7 +66,7 @@ export default function NewChatModal({children}) {
         },
       };
       const { data } = await axios.get('http://localhost:4000/api/user?search=', config);
-      console.log("list", data);
+      console.log("fetched users", data);
       setUserList(data);
     } catch (error) {
       setSnackbarMessage("Error fetching user list")
@@ -105,7 +105,6 @@ export default function NewChatModal({children}) {
   }
   const handleCreateGroupChat = async () => {
     if (!groupChatName || !checkedUsers) {
-      console.log("Fill all fields");
       setSnackbarMessage("Fill all fields")
       setSnackbarStatus("warning")
       setOpenSnackbar(true)
@@ -159,7 +158,7 @@ export default function NewChatModal({children}) {
         },
         config
       );
-      console.log('lol',data)
+      console.log('created personal chat',data)
 
       if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
       setSelectedChat(data);

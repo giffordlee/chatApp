@@ -30,7 +30,6 @@ export default function SettingsModal({children, setSnackbarMessage ,setSnackbar
 
   useEffect(() => {
     setUsername(user.username)
-    console.log(user.username)
   },[user, open])
 
   const handleUpdateUsername = async() => {
@@ -61,7 +60,6 @@ export default function SettingsModal({children, setSnackbarMessage ,setSnackbar
       setSnackbarMessage(error.response.data.message)
       setSnackbarStatus("error")
       setOpenSnackbar(true)
-      console.log('here',error.response.data.message)
       
     }
   };

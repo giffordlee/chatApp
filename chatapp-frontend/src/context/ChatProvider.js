@@ -12,13 +12,13 @@ const ChatProvider = ({ children }) => {
   const [selectedChat, setSelectedChat] = useState();
   const [user, setUser] = useState();
   // const [notification, setNotification] = useState([]);
-  const [chats, setChats] = useState();
+  const [chats, setChats] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([])
   useEffect(() => {
     socket = io(ENDPOINT);
 
     socket.on('online', (res) => {
-      console.log('online', res)
+      console.log('online users', res)
       setOnlineUsers(res)
     })
   }, [])
@@ -27,7 +27,6 @@ const ChatProvider = ({ children }) => {
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     setUser(userInfo);
-    console.log("USER", userInfo)
     
     if (!userInfo && window.location.pathname !=='/signup') navigate("/");
   }, [navigate]);

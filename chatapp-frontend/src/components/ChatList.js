@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { ChatState } from "../context/ChatProvider";
-import { List, ListItem, ListItemText, Button, Typography, Stack, Paper, Badge} from "@mui/material";
+import { List, ListItem, ListItemText, Button, Typography, Stack, Paper, Badge, Box} from "@mui/material";
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -9,7 +9,7 @@ import NewChatModal from "./NewChatModal";
 import SnackBar from "../misc/SnackBar";
 import { isUserOnline, getSenderId, getSender } from "../misc/ChatLogics";
 
-function ChatList({fetchAgain, setFetchAgain}) {
+function ChatList({fetchAgain, setFetchAgain, setPage, setDisableLoadMore}) {
   const [loggedUser, setLoggedUser] = useState();
   const { selectedChat, setSelectedChat, user, chats, setChats, onlineUsers } = ChatState();
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -18,7 +18,10 @@ function ChatList({fetchAgain, setFetchAgain}) {
 
 
   const handleChatClick = (chat) => {
-    setSelectedChat(chat);console.log("chats",chats)
+    setPage(1)
+    setDisableLoadMore(false)
+    setSelectedChat(chat);
+    console.log("chats",chats)
   };
 
   const fetchChats = async () => {
@@ -32,7 +35,6 @@ function ChatList({fetchAgain, setFetchAgain}) {
       const { data } = await axios.get("http://localhost:4000/api/chat", config);
       setChats(data);
     } catch (error) {
-      console.log("Error: ", error)
       setSnackbarMessage("Error Occured! Failed to load the chats")
       setSnackbarStatus("error")
       setOpenSnackbar(true)
@@ -53,10 +55,11 @@ function ChatList({fetchAgain, setFetchAgain}) {
           <Button variant="contained" sx={{mr:1, px:1, textTransform:'none'}} endIcon={<AddCircleIcon/>}>New Chat</Button>
         </NewChatModal>
       </Stack>
+      {chats.length !== 0 ? (
       <List
         sx={{ width: "100%", overflowY: "auto"}}
       >
-        {chats && chats.map((chat) => (
+        {chats.map((chat) => (
           <ListItem
             key={chat._id}
             button
@@ -92,6 +95,11 @@ function ChatList({fetchAgain, setFetchAgain}) {
           </ListItem>
         ))}
       </List>
+      ) : (
+        <Box sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+          <Typography variant="h6">No chat found...</Typography>
+        </Box>
+      )}
       <SnackBar openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar} snackbarStatus={snackbarStatus} snackbarMessage={snackbarMessage} setSnackbarMessage={setSnackbarMessage}/>
     </Paper>
   );

@@ -14,6 +14,8 @@ function ChatPage() {
   const { setUser, setSelectedChat, user } = ChatState();
   const navigate = useNavigate();
   const [fetchAgain, setFetchAgain] = useState(false)
+  const [page, setPage] = useState(1);
+  const [disableLoadMore, setDisableLoadMore] = useState(false);
 
   useEffect(() => {
     socket = io(ENDPOINT);
@@ -45,10 +47,10 @@ function ChatPage() {
           <NavigationBar SignOut={SignOut}/>
         </Grid>
         <Grid item xs={3} sx={{width:'100%', height:'91.5vh'}}>
-          <ChatList fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
+          <ChatList fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} setPage={setPage} setDisableLoadMore={setDisableLoadMore}/>
         </Grid>
         <Grid item xs={9} sx={{width:'100%', height:'91.5vh'}}> 
-          <ChatContent fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>
+          <ChatContent fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} page={page} setPage={setPage} disableLoadMore={disableLoadMore} setDisableLoadMore={setDisableLoadMore}/>
         </Grid>
       </Grid>
     </div>
